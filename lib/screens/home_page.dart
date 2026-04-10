@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:opala/models/veiculo.dart';
 import 'package:opala/screens/cadastro_veiculo_screen.dart';
+import 'package:opala/screens/lista_abastecimento_screen.dart';
 import 'package:opala/widgets/card_veiculo_widget.dart';
 import '../widgets/texto_formatado_widget.dart';
 
@@ -27,7 +28,9 @@ class _HomePageState extends State<HomePage> {
             onPressed: () async {
               final novoVeiculo = await Navigator.push(
                 context,
-                MaterialPageRoute(builder: (_) => const CadastroVeiculoScreen()),
+                MaterialPageRoute(
+                  builder: (_) => const CadastroVeiculoScreen(),
+                ),
               );
 
               if (novoVeiculo != null) {
@@ -62,9 +65,26 @@ class _HomePageState extends State<HomePage> {
             child: ListView.builder(
               itemCount: listaVeiculos.length,
               itemBuilder: (context, index) {
+                final veiculoAtual = listaVeiculos[index];
                 return Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-                  child: CardVeiculoWidget(veiculo: listaVeiculos[index]),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16.0,
+                    vertical: 8.0,
+                  ),
+                  child: InkWell(
+                    onTap: () async{
+                      await Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) =>
+                              ListaAbastecimentoScreen(veiculo: veiculoAtual),
+                        ),
+                      );
+
+                      setState(() {});
+                    },
+                    child: CardVeiculoWidget(veiculo: veiculoAtual),
+                  ),
                 );
               },
             ),
@@ -75,9 +95,7 @@ class _HomePageState extends State<HomePage> {
             padding: const EdgeInsets.only(bottom: 20, top: 20),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: [
-  
-              ],
+              children: [],
             ),
           ),
         ],

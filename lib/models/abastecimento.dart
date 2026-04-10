@@ -1,5 +1,5 @@
 class Abastecimento {
-  final String id;
+  final int id;
   final String posto;
   final String tipoCombustivel;
   final double quantidade;
