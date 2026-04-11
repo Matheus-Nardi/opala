@@ -8,22 +8,100 @@ class CardAbastecimentoWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      margin: const EdgeInsets.all(8.0),
-      padding: const EdgeInsets.all(16.0),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(12.0),
+    return Card(
+      elevation: 2,
+      color: Colors.white,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+        side: BorderSide(color: Colors.grey.shade300),
       ),
-      child: Column(
-        children: [
-          const SizedBox(height: 8.0),
-          TextoFormatado('Posto: ${abastecimento.posto}'),
-          TextoFormatado('Tipo Combustível: ${abastecimento.tipoCombustivel}'),
-          TextoFormatado('Quantidade: ${abastecimento.quantidade} L'),
-          TextoFormatado('Valor Total: R\$ ${abastecimento.valorTotal.toStringAsFixed(2)}'),
-          TextoFormatado('Odômetro: ${abastecimento.odometro} km'),
-          TextoFormatado('Data: ${abastecimento.data.day}/${abastecimento.data.month}/${abastecimento.data.year}'),
-        ],
+      margin: const EdgeInsets.symmetric(horizontal: 4.0, vertical: 4.0),
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Row(
+                  children: [
+                    const Icon(Icons.local_gas_station, color: Colors.blueGrey, size: 24),
+                    const SizedBox(width: 8),
+                    TextoFormatado(
+                      abastecimento.posto,
+                      tamanho: 16,
+                      peso: FontWeight.bold,
+                      cor: Colors.blueGrey.shade800,
+                    ),
+                  ],
+                ),
+                TextoFormatado(
+                  '${abastecimento.data.day.toString().padLeft(2, '0')}/${abastecimento.data.month.toString().padLeft(2, '0')}/${abastecimento.data.year}',
+                  tamanho: 14,
+                  cor: Colors.blueGrey.shade600,
+                ),
+              ],
+            ),
+            const Padding(
+              padding: EdgeInsets.symmetric(vertical: 8),
+              child: Divider(height: 1),
+            ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    TextoFormatado(
+                      'Combustível',
+                      tamanho: 12,
+                      cor: Colors.grey.shade600,
+                    ),
+                    TextoFormatado(
+                      '${abastecimento.quantidade}L ${abastecimento.tipoCombustivel}',
+                      tamanho: 14,
+                      peso: FontWeight.bold,
+                      cor: Colors.blueGrey.shade800,
+                    ),
+                  ],
+                ),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    TextoFormatado(
+                      'Odômetro',
+                      tamanho: 12,
+                      cor: Colors.grey.shade600,
+                    ),
+                    TextoFormatado(
+                      '${abastecimento.odometro} km',
+                      tamanho: 14,
+                      peso: FontWeight.bold,
+                      cor: Colors.blueGrey.shade800,
+                    ),
+                  ],
+                ),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    TextoFormatado(
+                      'Valor Total',
+                      tamanho: 12,
+                      cor: Colors.grey.shade600,
+                    ),
+                    TextoFormatado(
+                      'R\$ ${abastecimento.valorTotal.toStringAsFixed(2)}',
+                      tamanho: 14,
+                      peso: FontWeight.bold,
+                      cor: Colors.blueGrey.shade800,
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }

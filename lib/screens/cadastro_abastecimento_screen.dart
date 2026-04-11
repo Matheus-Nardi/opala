@@ -33,58 +33,69 @@ class _CadastroAbastecimentoScreenState extends State<CadastroAbastecimentoScree
    return Scaffold(
       appBar: AppBar(
         title: const Text('Cadastrar Novo Abastecimento'),
-        backgroundColor: Colors.indigo,
+        backgroundColor: Colors.blueGrey,
+        foregroundColor: Colors.white,
       ),
-      body: Padding(padding: const EdgeInsetsGeometry.all(16.0),
-      child: Column(
-        children: [
-          TextField(
-            controller: _postoController,
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          children: [
+            TextField(
+              controller: _postoController,
               decoration: const InputDecoration(labelText: 'Posto' , border: OutlineInputBorder()),
-          ),
-          TextField(
-            controller: _tipoCombustivelController,
-            decoration: const InputDecoration(labelText: 'Tipo de Combustível', border: OutlineInputBorder()),
-          ),
-          TextField(
-            controller: _quantidadeController,
-            decoration: const InputDecoration(labelText: 'Quantidade', border: OutlineInputBorder()),
-            keyboardType: TextInputType.number,
-          ),
-          TextField(
-            controller: _valorTotalController,
-            decoration: const InputDecoration(labelText: 'Valor Total', border: OutlineInputBorder()),
-            keyboardType: TextInputType.number,
-          ),
-          TextField(
-            controller: _odometroController,
-            decoration: const InputDecoration(labelText: 'Odômetro', border: OutlineInputBorder()),
-            keyboardType: TextInputType.number,
-          ),
-          TextField(
-            controller: _dataController,
-            decoration: const InputDecoration(labelText: 'Data', border: OutlineInputBorder()),
-          ),
-          const SizedBox(height: 20),
-          ElevatedButton(
-            onPressed: () {
-              final novoAbastecimento = Abastecimento(
-                id: DateTime.now().millisecondsSinceEpoch,
-                posto: _postoController.text,
-                tipoCombustivel: _tipoCombustivelController.text,
-                quantidade: double.tryParse(_quantidadeController.text) ?? 0,
-                valorTotal: double.tryParse(_valorTotalController.text) ?? 0,
-                odometro: double.tryParse(_odometroController.text) ?? 0,
-                data: DateTime.tryParse(_dataController.text) ?? DateTime.now(),
-              );
-              Navigator.pop(context, novoAbastecimento);
-            },
-            style: ElevatedButton.styleFrom(backgroundColor: Colors.indigo),
-            child: const TextoFormatado('Salvar Abastecimento', cor: Colors.white,),
-          ),
-        ],
-      ), ),
+            ),
+            const SizedBox(height: 12),
+            TextField(
+              controller: _tipoCombustivelController,
+              decoration: const InputDecoration(labelText: 'Tipo de Combustível', border: OutlineInputBorder()),
+            ),
+            const SizedBox(height: 12),
+            TextField(
+              controller: _quantidadeController,
+              decoration: const InputDecoration(labelText: 'Quantidade', border: OutlineInputBorder()),
+              keyboardType: TextInputType.number,
+            ),
+            const SizedBox(height: 12),
+            TextField(
+              controller: _valorTotalController,
+              decoration: const InputDecoration(labelText: 'Valor Total', border: OutlineInputBorder()),
+              keyboardType: TextInputType.number,
+            ),
+            const SizedBox(height: 12),
+            TextField(
+              controller: _odometroController,
+              decoration: const InputDecoration(labelText: 'Odômetro', border: OutlineInputBorder()),
+              keyboardType: TextInputType.number,
+            ),
+            const SizedBox(height: 12),
+            TextField(
+              controller: _dataController,
+              decoration: const InputDecoration(labelText: 'Data', border: OutlineInputBorder()),
+            ),
+            const SizedBox(height: 24),
+            SizedBox(
+              width: double.infinity,
+              height: 50,
+              child: ElevatedButton(
+                onPressed: () {
+                  final novoAbastecimento = Abastecimento(
+                    id: DateTime.now().millisecondsSinceEpoch,
+                    posto: _postoController.text,
+                    tipoCombustivel: _tipoCombustivelController.text,
+                    quantidade: double.tryParse(_quantidadeController.text) ?? 0,
+                    valorTotal: double.tryParse(_valorTotalController.text) ?? 0,
+                    odometro: double.tryParse(_odometroController.text) ?? 0,
+                    data: DateTime.tryParse(_dataController.text) ?? DateTime.now(),
+                  );
+                  Navigator.pop(context, novoAbastecimento);
+                },
+                style: ElevatedButton.styleFrom(backgroundColor: Colors.blueGrey),
+                child: const TextoFormatado('Salvar Abastecimento', cor: Colors.white, tamanho: 16, peso: FontWeight.bold),
+              ),
+            ),
+          ],
+        ),
+      ),
     );
-             
   }
 }

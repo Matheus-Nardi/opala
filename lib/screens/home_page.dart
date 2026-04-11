@@ -20,47 +20,38 @@ class _HomePageState extends State<HomePage> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Opala - Controle de Veículos'),
-        backgroundColor: Colors.indigo,
+        backgroundColor: Colors.blueGrey,
         foregroundColor: Colors.white,
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.add_road),
-            onPressed: () async {
-              final novoVeiculo = await Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (_) => const CadastroVeiculoScreen(),
-                ),
-              );
+      ),
+      floatingActionButton: FloatingActionButton(
+        backgroundColor: Colors.blueGrey,
+        foregroundColor: Colors.white,
+        child: const Icon(Icons.add),
+        onPressed: () async {
+          final novoVeiculo = await Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (_) => const CadastroVeiculoScreen(),
+            ),
+          );
 
-              if (novoVeiculo != null) {
-                setState(() {
-                  listaVeiculos.add(novoVeiculo);
-                });
-              }
-            },
-          ),
-        ],
+          if (novoVeiculo != null) {
+            setState(() {
+              listaVeiculos.add(novoVeiculo);
+            });
+          }
+        },
       ),
       body: Column(
         children: [
           const TextoFormatado(
-            'SEUS VEÍCULOS',
-            tamanho: 26,
+            'Seus Veículos',
+            tamanho: 24,
             peso: FontWeight.bold,
-            cor: Colors.indigo,
+            cor: Colors.blueGrey,
             padding: 20,
           ),
-          const TextoFormatado(
-            'Instrução: Role a tela para explorar seus veículos cadastrados.',
-            corFundo: Color(0xFFFFF9C4),
-            peso: FontWeight.w500,
-            estilo: FontStyle.italic,
-            padding: 20,
-          ),
-
-          const Divider(),
-
+          const SizedBox(height: 8),
           Expanded(
             child: ListView.builder(
               itemCount: listaVeiculos.length,
@@ -87,15 +78,6 @@ class _HomePageState extends State<HomePage> {
                   ),
                 );
               },
-            ),
-          ),
-          const Divider(),
-
-          Padding(
-            padding: const EdgeInsets.only(bottom: 20, top: 20),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: [],
             ),
           ),
         ],

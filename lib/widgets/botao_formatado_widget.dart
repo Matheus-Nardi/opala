@@ -24,10 +24,10 @@ class BotaoFormatado extends StatelessWidget {
           child: Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: Colors.indigo.shade100,
+              color: Colors.blueGrey.shade100,
               shape: BoxShape.circle,
             ),
-            child: Icon(icone, color: Colors.indigo, size: 30),
+            child: Icon(icone, color: Colors.blueGrey, size: 30),
           ),
         ),
         const SizedBox(height: 6),
@@ -36,7 +36,7 @@ class BotaoFormatado extends StatelessWidget {
           legenda,
           tamanho: 14,
           peso: FontWeight.bold,
-          cor: Colors.indigo,
+          cor: Colors.blueGrey,
         ),
       ],
     );

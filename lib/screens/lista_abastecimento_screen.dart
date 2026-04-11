@@ -18,7 +18,7 @@ class _ListaAbastecimentoScreenState extends State<ListaAbastecimentoScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text('Abastecimentos - ${widget.veiculo.modelo}'),
-        backgroundColor: Colors.indigo,
+        backgroundColor: Colors.blueGrey,
         foregroundColor: Colors.white,
       ),
 
@@ -43,7 +43,7 @@ class _ListaAbastecimentoScreenState extends State<ListaAbastecimentoScreen> {
         ],
       ),
       floatingActionButton: FloatingActionButton(
-        backgroundColor: Colors.indigo,
+        backgroundColor: Colors.blueGrey,
         foregroundColor: Colors.white,
         child: const Icon(Icons.add),
         onPressed: () async {
