@@ -20,20 +20,22 @@ O sistema oferece uma interface onde o usuário pode:
 
 ## Requisitos Funcionais
 
-### RF01 - Painel do Veículo
+### RF01 - Gestão da Frota (Veículos)
+A aplicação deve permitir ao usuário centralizar todos os seus veículos em uma única visualização (Home). Deve listar nome, placa e os indicadores principais atualizados (Total Mensal/Gasto e Média de Consumo - km/L). Também deve ser possível cadastrar novos veículos na frota a qualquer momento e deletar os existentes.
 
-O aplicativo deve exibir os veículos do usuário em formato de cartões deslizáveis. Cada cartão apresenta nome/modelo e indicadores principais (gasto total no mês e média de quilometragem), centralizando a visão geral em um único lugar.
+### RF02 - Histórico Individualizado de Abastecimentos
+O aplicativo deve fornecer uma tela secundária específica para cada veículo. Quando o usuário acessa um veículo na lista, a aplicação exibe toda a lista do histórico de abastecimentos (detalhando valor pago, quilometragem, tipo de combustível e posto). Permite também a exclusão de abastecimentos pontuais.
 
-### RF02 - Histórico de Abastecimentos
+### RF03 - Registro de Abastecimentos
+O sistema deve possuir um formulário para novos registros dentro do painel de cada veículo. O usuário cadastra no aplicativo (odômetro atual, quantidade de litros e custo total), de forma que os cálculos matemáticos do *RF01* sejam atualizados automaticamente na listagem.
 
-Na mesma tela principal, logo abaixo do painel do veículo, o aplicativo deve exibir uma lista com o histórico de todos os abastecimentos realizados para o veículo selecionado no momento, detalhando posto, data e valor pago.
+## Screenshots
 
-### RF03 - Cadastro de Dados
-
-O sistema deve possuir formulários de entrada de dados para que o usuário possa:
-
-- Registrar novos veículos.
-- Registrar novos abastecimentos para determinado veículo.
+<div align="center">
+  <img src=".github/assets/tela_veiculos.png" alt="Tela Inicial" width="250">
+  &nbsp;&nbsp;&nbsp;
+  <img src=".github/assets/tela_abastecimento.png" alt="Lista de Abastecimentos" width="250">
+</div>
 
 ## Stack Utilizada
 
