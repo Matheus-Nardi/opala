@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:opala/models/veiculo.dart';
 import 'package:opala/screens/cadastro_abastecimento_screen.dart';
+import 'package:opala/utils/snackbar_util.dart';
 import 'package:opala/widgets/card_abastecimento_widget.dart';
 
 class ListaAbastecimentoScreen extends StatefulWidget {
@@ -13,6 +14,42 @@ class ListaAbastecimentoScreen extends StatefulWidget {
 }
 
 class _ListaAbastecimentoScreenState extends State<ListaAbastecimentoScreen> {
+  void _removerAbastecimento(int index) {
+    setState(() {
+      widget.veiculo.abastecimentos.removeAt(index);
+    });
+
+    SnackbarWidget.mostrar(context, 'Abastecimento removido com sucesso!');
+  }
+
+  void _confirmarExclusao(int index) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Excluir Abastecimento'),
+        content: const Text(
+          'Tem certeza que deseja remover este abastecimento? Todo o histórico será perdido.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text(
+              'Cancelar',
+              style: TextStyle(color: Colors.blueGrey),
+            ),
+          ),
+          TextButton(
+            onPressed: () {
+              _removerAbastecimento(index);
+              Navigator.pop(context);
+            },
+            child: const Text('Excluir', style: TextStyle(color: Colors.red)),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -24,7 +61,7 @@ class _ListaAbastecimentoScreenState extends State<ListaAbastecimentoScreen> {
 
       body: Column(
         children: [
-          Expanded( 
+          Expanded(
             child: ListView.builder(
               itemCount: widget.veiculo.abastecimentos.length,
               itemBuilder: (context, index) {
@@ -33,8 +70,11 @@ class _ListaAbastecimentoScreenState extends State<ListaAbastecimentoScreen> {
                     horizontal: 16.0,
                     vertical: 8.0,
                   ),
-                  child: CardAbastecimentoWidget(
-                    abastecimento: widget.veiculo.abastecimentos[index],
+                  child: InkWell(
+                    onLongPress: () => _confirmarExclusao(index),
+                    child: CardAbastecimentoWidget(
+                      abastecimento: widget.veiculo.abastecimentos[index],
+                    ),
                   ),
                 );
               },

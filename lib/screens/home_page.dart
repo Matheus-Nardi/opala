@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:opala/models/veiculo.dart';
 import 'package:opala/screens/cadastro_veiculo_screen.dart';
 import 'package:opala/screens/lista_abastecimento_screen.dart';
+import 'package:opala/utils/snackbar_util.dart';
 import 'package:opala/widgets/card_veiculo_widget.dart';
 import '../widgets/texto_formatado_widget.dart';
 
@@ -14,6 +15,41 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   List<Veiculo> listaVeiculos = []; // Nosso "banco de dados" temporário
+
+  void _removerVeiculo(int index) {
+    setState(() {
+      listaVeiculos.removeAt(index);
+    });
+    SnackbarWidget.mostrar(context, 'Veículo removido com sucesso!');
+  }
+
+  void _confirmarExclusao(int index) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Excluir Veículo'),
+        content: const Text(
+          'Tem certeza que deseja remover este veículo? Todo o histórico será perdido.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text(
+              'Cancelar',
+              style: TextStyle(color: Colors.blueGrey),
+            ),
+          ),
+          TextButton(
+            onPressed: () {
+              _removerVeiculo(index);
+              Navigator.pop(context);
+            },
+            child: const Text('Excluir', style: TextStyle(color: Colors.red)),
+          ),
+        ],
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -30,9 +66,7 @@ class _HomePageState extends State<HomePage> {
         onPressed: () async {
           final novoVeiculo = await Navigator.push(
             context,
-            MaterialPageRoute(
-              builder: (_) => const CadastroVeiculoScreen(),
-            ),
+            MaterialPageRoute(builder: (_) => const CadastroVeiculoScreen()),
           );
 
           if (novoVeiculo != null) {
@@ -63,7 +97,7 @@ class _HomePageState extends State<HomePage> {
                     vertical: 8.0,
                   ),
                   child: InkWell(
-                    onTap: () async{
+                    onTap: () async {
                       await Navigator.push(
                         context,
                         MaterialPageRoute(
@@ -74,6 +108,7 @@ class _HomePageState extends State<HomePage> {
 
                       setState(() {});
                     },
+                    onLongPress: () => _confirmarExclusao(index),
                     child: CardVeiculoWidget(veiculo: veiculoAtual),
                   ),
                 );
