@@ -87,9 +87,18 @@ class _HomePageState extends State<HomePage> {
           ),
           const SizedBox(height: 8),
           Expanded(
-            child: ListView.builder(
-              itemCount: listaVeiculos.length,
-              itemBuilder: (context, index) {
+            child: listaVeiculos.isEmpty
+                ? const Center(
+                    child: TextoFormatado(
+                      'Nenhum veículo cadastrado.',
+                      tamanho: 16,
+                      cor: Colors.grey,
+                      estilo: FontStyle.italic,
+                    ),
+                  )
+                : ListView.builder(
+                    itemCount: listaVeiculos.length,
+                    itemBuilder: (context, index) {
                 final veiculoAtual = listaVeiculos[index];
                 return Padding(
                   padding: const EdgeInsets.symmetric(

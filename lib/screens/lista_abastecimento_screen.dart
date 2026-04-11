@@ -3,6 +3,7 @@ import 'package:opala/models/veiculo.dart';
 import 'package:opala/screens/cadastro_abastecimento_screen.dart';
 import 'package:opala/utils/snackbar_util.dart';
 import 'package:opala/widgets/card_abastecimento_widget.dart';
+import 'package:opala/widgets/texto_formatado_widget.dart';
 
 class ListaAbastecimentoScreen extends StatefulWidget {
   final Veiculo veiculo;
@@ -62,23 +63,32 @@ class _ListaAbastecimentoScreenState extends State<ListaAbastecimentoScreen> {
       body: Column(
         children: [
           Expanded(
-            child: ListView.builder(
-              itemCount: widget.veiculo.abastecimentos.length,
-              itemBuilder: (context, index) {
-                return Padding(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 16.0,
-                    vertical: 8.0,
-                  ),
-                  child: InkWell(
-                    onLongPress: () => _confirmarExclusao(index),
-                    child: CardAbastecimentoWidget(
-                      abastecimento: widget.veiculo.abastecimentos[index],
+            child: widget.veiculo.abastecimentos.isEmpty
+                ? const Center(
+                    child: TextoFormatado(
+                      'Nenhum abastecimento cadastrado.',
+                      tamanho: 16,
+                      cor: Colors.grey,
+                      estilo: FontStyle.italic,
                     ),
+                  )
+                : ListView.builder(
+                    itemCount: widget.veiculo.abastecimentos.length,
+                    itemBuilder: (context, index) {
+                      return Padding(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 16.0,
+                          vertical: 8.0,
+                        ),
+                        child: InkWell(
+                          onLongPress: () => _confirmarExclusao(index),
+                          child: CardAbastecimentoWidget(
+                            abastecimento: widget.veiculo.abastecimentos[index],
+                          ),
+                        ),
+                      );
+                    },
                   ),
-                );
-              },
-            ),
           ),
         ],
       ),

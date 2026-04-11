@@ -83,6 +83,22 @@ class CardVeiculoWidget extends StatelessWidget {
                   ],
                 ),
                 Column(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    TextoFormatado(
+                      'Média (km/L)',
+                      tamanho: 12,
+                      cor: Colors.grey.shade600,
+                    ),
+                    TextoFormatado(
+                      veiculo.mediaKmLitro > 0 ? veiculo.mediaKmLitro.toStringAsFixed(1) : '--',
+                      tamanho: 16,
+                      peso: FontWeight.bold,
+                      cor: Colors.blueGrey.shade800,
+                    ),
+                  ],
+                ),
+                Column(
                   crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
                     TextoFormatado(

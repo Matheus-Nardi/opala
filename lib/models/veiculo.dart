@@ -29,4 +29,21 @@ class Veiculo {
   int get countAbastecimentos {
     return abastecimentos.length;
   }
+
+  double get mediaKmLitro {
+    if (abastecimentos.length < 2) {
+      return 0.0;
+    }
+
+    final ultimo = abastecimentos.last;
+    final penultimo = abastecimentos[abastecimentos.length - 2];
+
+    final distanciaPercorrida = ultimo.odometro - penultimo.odometro;
+
+    if (distanciaPercorrida <= 0 || ultimo.quantidade <= 0) {
+      return 0.0;
+    }
+
+    return distanciaPercorrida / ultimo.quantidade;
+  }
 }
