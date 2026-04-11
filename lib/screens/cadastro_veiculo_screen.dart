@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:opala/models/veiculo.dart';
 import 'package:opala/widgets/texto_formatado_widget.dart';
+import 'package:opala/utils/snackbar_util.dart'; 
 
 class CadastroVeiculoScreen extends StatefulWidget {
   const CadastroVeiculoScreen({super.key});
@@ -26,6 +27,29 @@ class _CadastroVeiculoScreenState extends State<CadastroVeiculoScreen> {
     super.dispose();
   }
 
+  void _salvarVeiculo() {
+    if (_marcaController.text.isEmpty ||
+        _modeloController.text.isEmpty ||
+        _anoController.text.isEmpty ||
+        _placaController.text.isEmpty) {
+      
+      SnackbarWidget.mostrar(context, 'Preencha os campos obrigatórios.', corFundo: Colors.grey.shade800);
+      return; 
+    }
+
+    final novoVeiculo = Veiculo(
+      id: DateTime.now().millisecondsSinceEpoch,
+      marca: _marcaController.text,
+      modelo: _modeloController.text,
+      ano: int.tryParse(_anoController.text) ?? 0,
+      placa: _placaController.text,
+      apelido: _apelidoController.text,
+    );
+
+    SnackbarWidget.mostrar(context, 'Veículo adicionado com sucesso!');
+    Navigator.pop(context, novoVeiculo);
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -38,25 +62,33 @@ class _CadastroVeiculoScreenState extends State<CadastroVeiculoScreen> {
         padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [
+            const Align(
+              alignment: Alignment.centerLeft,
+              child: Text(
+                '* Campos obrigatórios',
+                style: TextStyle(color: Colors.redAccent, fontSize: 12),
+              ),
+            ),
+            const SizedBox(height: 16),
             TextField(
               controller: _marcaController,
-              decoration: const InputDecoration(labelText: 'Marca', border: OutlineInputBorder()),
+              decoration: const InputDecoration(labelText: 'Marca*', border: OutlineInputBorder()),
             ),
             const SizedBox(height: 12),
             TextField(
               controller: _modeloController,
-              decoration: const InputDecoration(labelText: 'Modelo', border: OutlineInputBorder()),
+              decoration: const InputDecoration(labelText: 'Modelo*', border: OutlineInputBorder()),
             ),
             const SizedBox(height: 12),
             TextField(
               controller: _anoController,
-              decoration: const InputDecoration(labelText: 'Ano', border: OutlineInputBorder()),
+              decoration: const InputDecoration(labelText: 'Ano*', border: OutlineInputBorder()),
               keyboardType: TextInputType.number,
             ),
             const SizedBox(height: 12),
             TextField(
               controller: _placaController,
-              decoration: const InputDecoration(labelText: 'Placa', border: OutlineInputBorder()),
+              decoration: const InputDecoration(labelText: 'Placa*', border: OutlineInputBorder()),
             ),
             const SizedBox(height: 12),
             TextField(
@@ -68,17 +100,7 @@ class _CadastroVeiculoScreenState extends State<CadastroVeiculoScreen> {
               width: double.infinity,
               height: 50,
               child: ElevatedButton(
-                onPressed: () {
-                  final novoVeiculo = Veiculo(
-                    id: DateTime.now().millisecondsSinceEpoch,
-                    marca: _marcaController.text,
-                    modelo: _modeloController.text,
-                    ano: int.tryParse(_anoController.text) ?? 0,
-                    placa: _placaController.text,
-                    apelido: _apelidoController.text
-                  );
-                  Navigator.pop(context, novoVeiculo);
-                },
+                onPressed: _salvarVeiculo, 
                 style: ElevatedButton.styleFrom(backgroundColor: Colors.blueGrey),
                 child: const TextoFormatado('Salvar Veículo', cor: Colors.white, tamanho: 16, peso: FontWeight.bold),
               ),
