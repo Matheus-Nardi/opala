@@ -5,6 +5,7 @@ class Abastecimento {
   final double quantidade;
   final double valorTotal;
   final double odometro;
+  final bool tanqueCheio;
   final DateTime data;
 
   Abastecimento({
@@ -15,5 +16,6 @@ class Abastecimento {
     required this.valorTotal,
     required this.odometro,
     required this.data,
+    this.tanqueCheio = true,
   });
 }

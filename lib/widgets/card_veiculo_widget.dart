@@ -91,10 +91,12 @@ class CardVeiculoWidget extends StatelessWidget {
                       cor: Colors.grey.shade600,
                     ),
                     TextoFormatado(
-                      veiculo.mediaKmLitro > 0 ? veiculo.mediaKmLitro.toStringAsFixed(1) : '--',
+                      veiculo.ultimoConsumoSeguro > 0 
+                        ? veiculo.ultimoConsumoSeguro.toStringAsFixed(1) 
+                        : (veiculo.mediaGlobal > 0 ? '${veiculo.mediaGlobal.toStringAsFixed(1)} (Global)' : '--'),
                       tamanho: 16,
                       peso: FontWeight.bold,
-                      cor: Colors.blueGrey.shade800,
+                      cor: veiculo.ultimoConsumoSeguro > 0 ? Colors.blueGrey.shade800 : Colors.blueGrey.shade400,
                     ),
                   ],
                 ),

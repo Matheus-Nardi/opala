@@ -30,20 +30,57 @@ class Veiculo {
     return abastecimentos.length;
   }
 
-  double get mediaKmLitro {
-    if (abastecimentos.length < 2) {
-      return 0.0;
+  double get mediaGlobal {
+    if (abastecimentos.isEmpty || abastecimentos.length < 2) return 0.0;
+    
+    final primeiro = abastecimentos.first;
+    final ultimo = abastecimentos.last;
+
+    double distanciaTotal = ultimo.odometro - primeiro.odometro;
+    
+    double quantidadeTotalGasta = 0.0;
+    // Começa do índice 1 pois o primeiro abastecimento é a referência inicial
+    for (int i = 1; i < abastecimentos.length; i++) {
+        quantidadeTotalGasta += abastecimentos[i].quantidade;
     }
+
+    if(distanciaTotal <= 0 || quantidadeTotalGasta <= 0) return 0.0;
+
+    return distanciaTotal / quantidadeTotalGasta;
+  }
+
+  double get ultimoConsumoSeguro {
+    if (abastecimentos.isEmpty || abastecimentos.length < 2) return 0.0;
 
     final ultimo = abastecimentos.last;
-    final penultimo = abastecimentos[abastecimentos.length - 2];
-
-    final distanciaPercorrida = ultimo.odometro - penultimo.odometro;
-
-    if (distanciaPercorrida <= 0 || ultimo.quantidade <= 0) {
-      return 0.0;
+    
+    if(!ultimo.tanqueCheio) {
+        return 0.0;
     }
 
-    return distanciaPercorrida / ultimo.quantidade;
+    int indexAnterior = abastecimentos.length - 2;
+    double litrosGastosDesdeUltimoTanqueCheio = ultimo.quantidade;
+
+    while(indexAnterior >= 0) {
+      final anterior = abastecimentos[indexAnterior];
+      
+      if (anterior.tanqueCheio) {
+          double distanciaPeriodo = ultimo.odometro - anterior.odometro;
+          if (distanciaPeriodo <= 0) return 0.0;
+          return distanciaPeriodo / litrosGastosDesdeUltimoTanqueCheio;
+      } else {
+          litrosGastosDesdeUltimoTanqueCheio += anterior.quantidade;
+      }
+      indexAnterior--;
+    }
+    
+    return 0.0;
+  }
+
+  // Mantendo o getter mediaKmLitro para compatibilidade inicial ou padrão
+  double get mediaKmLitro {
+    double ultimo = ultimoConsumoSeguro;
+    if (ultimo > 0) return ultimo;
+    return mediaGlobal;
   }
 }

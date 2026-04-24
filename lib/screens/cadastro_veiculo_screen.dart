@@ -37,6 +37,10 @@ class _CadastroVeiculoScreenState extends State<CadastroVeiculoScreen> {
       return; 
     }
 
+    // Capturamos referências antes do pop
+    final navigator = Navigator.of(context);
+    final messenger = ScaffoldMessenger.of(context);
+
     final novoVeiculo = Veiculo(
       id: DateTime.now().millisecondsSinceEpoch,
       marca: _marcaController.text,
@@ -46,8 +50,10 @@ class _CadastroVeiculoScreenState extends State<CadastroVeiculoScreen> {
       apelido: _apelidoController.text,
     );
 
-    SnackbarWidget.mostrar(context, 'Veículo adicionado com sucesso!');
-    Navigator.pop(context, novoVeiculo);
+    messenger.showSnackBar(
+      const SnackBar(content: Text('Veículo adicionado com sucesso!')),
+    );
+    navigator.pop(novoVeiculo);
   }
 
   @override

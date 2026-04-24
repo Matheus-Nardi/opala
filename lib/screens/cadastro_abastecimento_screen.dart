@@ -19,6 +19,7 @@ class _CadastroAbastecimentoScreenState
   final _valorTotalController = TextEditingController();
   final _odometroController = TextEditingController();
   final _dataController = TextEditingController();
+  bool _tanqueCheio = true;
 
   @override
   void dispose() {
@@ -47,6 +48,10 @@ class _CadastroAbastecimentoScreenState
         );
         return;
       }
+      // Capturamos as referências ANTES do pop para evitar usar o context de um widget já fechado
+      final navigator = Navigator.of(context);
+      final messenger = ScaffoldMessenger.of(context);
+
       final novoAbastecimento = Abastecimento(
         id: DateTime.now().millisecondsSinceEpoch,
         posto: _postoController.text,
@@ -54,11 +59,14 @@ class _CadastroAbastecimentoScreenState
         quantidade: double.tryParse(_quantidadeController.text) ?? 0,
         valorTotal: double.tryParse(_valorTotalController.text) ?? 0,
         odometro: double.tryParse(_odometroController.text) ?? 0,
+        tanqueCheio: _tanqueCheio,
         data: DateTime.tryParse(_dataController.text) ?? DateTime.now(),
       );
 
-      SnackbarWidget.mostrar(context, 'Abastecimento adicionado com sucesso!');
-      Navigator.pop(context, novoAbastecimento);
+      messenger.showSnackBar(
+        const SnackBar(content: Text('Abastecimento adicionado com sucesso!')),
+      );
+      navigator.pop(novoAbastecimento);
     }
 
     return Scaffold(
@@ -128,6 +136,22 @@ class _CadastroAbastecimentoScreenState
                 labelText: 'Data*',
                 border: OutlineInputBorder(),
               ),
+            ),
+            const SizedBox(height: 12),
+            SwitchListTile(
+              title: const TextoFormatado('Tanque Cheio?', tamanho: 16),
+              subtitle: const TextoFormatado(
+                'Marque se você completou o tanque',
+                tamanho: 12,
+                cor: Colors.grey,
+              ),
+              value: _tanqueCheio,
+              onChanged: (bool value) {
+                setState(() {
+                  _tanqueCheio = value;
+                });
+              },
+              activeColor: Colors.blueGrey,
             ),
             const SizedBox(height: 24),
             SizedBox(

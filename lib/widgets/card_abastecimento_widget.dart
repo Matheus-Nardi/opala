@@ -24,18 +24,40 @@ class CardAbastecimentoWidget extends StatelessWidget {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Row(
-                  children: [
-                    const Icon(Icons.local_gas_station, color: Colors.blueGrey, size: 24),
-                    const SizedBox(width: 8),
-                    TextoFormatado(
-                      abastecimento.posto,
-                      tamanho: 16,
-                      peso: FontWeight.bold,
-                      cor: Colors.blueGrey.shade800,
-                    ),
-                  ],
+                Expanded(
+                  child: Row(
+                    children: [
+                      const Icon(Icons.local_gas_station, color: Colors.blueGrey, size: 24),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: TextoFormatado(
+                          abastecimento.posto,
+                          tamanho: 16,
+                          peso: FontWeight.bold,
+                          cor: Colors.blueGrey.shade800,
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                        decoration: BoxDecoration(
+                          color: abastecimento.tanqueCheio ? Colors.green.shade50 : Colors.orange.shade50,
+                          borderRadius: BorderRadius.circular(4),
+                          border: Border.all(
+                            color: abastecimento.tanqueCheio ? Colors.green.shade200 : Colors.orange.shade200,
+                          ),
+                        ),
+                        child: TextoFormatado(
+                          abastecimento.tanqueCheio ? 'Cheio' : 'Parcial',
+                          tamanho: 10,
+                          peso: FontWeight.bold,
+                          cor: abastecimento.tanqueCheio ? Colors.green.shade700 : Colors.orange.shade700,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
+                const SizedBox(width: 8),
                 TextoFormatado(
                   '${abastecimento.data.day.toString().padLeft(2, '0')}/${abastecimento.data.month.toString().padLeft(2, '0')}/${abastecimento.data.year}',
                   tamanho: 14,
