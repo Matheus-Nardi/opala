@@ -76,10 +76,34 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Opala - Controle de Veículos'),
-        backgroundColor: Colors.blueGrey,
-        foregroundColor: Colors.white,
+      appBar: PreferredSize(
+        preferredSize: const Size.fromHeight(kToolbarHeight),
+        child: ListenableBuilder(
+          listenable: _controller,
+          builder: (context, _) {
+            return AppBar(
+              title: const Text('Opala - Controle de Veículos'),
+              backgroundColor: Colors.blueGrey,
+              foregroundColor: Colors.white,
+              actions: [
+                IconButton(
+                  icon: const Icon(Icons.picture_as_pdf),
+                  onPressed: () {
+                    if (_controller.veiculos.isEmpty) {
+                      SnackbarWidget.mostrar(
+                        context,
+                        'Não há veículos para exportar.',
+                        corFundo: Colors.orangeAccent,
+                      );
+                      return;
+                    }
+                    _controller.exportarPdf();
+                  },
+                ),
+              ],
+            );
+          },
+        ),
       ),
       drawer: Drawer(
         child: Column(

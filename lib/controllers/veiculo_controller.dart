@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import '../models/veiculo.dart';
 import '../services/veiculo_service.dart';
-
 import '../services/abastecimento_service.dart';
+import '../services/pdf_export_service.dart';
+import 'package:printing/printing.dart';
 
 class VeiculoController extends ChangeNotifier {
   final VeiculoService _service = VeiculoService();
@@ -65,5 +66,17 @@ class VeiculoController extends ChangeNotifier {
       debugPrint('Erro ao deletar veículo: $e');
       rethrow;
     }
+  }
+
+  Future<void> exportarPdf() async {
+    final pdfBytes = await PdfExportService.gerarRelatorioVeiculos(
+      veiculos: _veiculos,
+      busca: _busca,
+    );
+
+    await Printing.layoutPdf(
+      onLayout: (format) async => pdfBytes,
+      name: 'Relatorio_Frota_Veiculos_${DateTime.now().millisecondsSinceEpoch}',
+    );
   }
 }

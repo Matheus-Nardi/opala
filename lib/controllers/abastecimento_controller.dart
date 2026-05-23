@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import '../models/abastecimento.dart';
 import '../models/veiculo.dart';
 import '../services/abastecimento_service.dart';
+import '../services/pdf_export_service.dart';
+import 'package:printing/printing.dart';
 
 class AbastecimentoController extends ChangeNotifier {
   final AbastecimentoService _service = AbastecimentoService();
@@ -126,5 +128,20 @@ class AbastecimentoController extends ChangeNotifier {
       debugPrint('Erro ao deletar abastecimento: $e');
       rethrow;
     }
+  }
+
+  Future<void> exportarPdf() async {
+    final pdfBytes = await PdfExportService.gerarRelatorioAbastecimentos(
+      veiculo: veiculo,
+      abastecimentos: _abastecimentosFiltrados,
+      filtroTipoCombustivel: _filtroTipoCombustivel,
+      filtroDataInicial: _filtroDataInicial,
+      filtroDataFinal: _filtroDataFinal,
+    );
+
+    await Printing.layoutPdf(
+      onLayout: (format) async => pdfBytes,
+      name: 'Relatorio_Abastecimentos_${veiculo.modelo.replaceAll(' ', '_')}_${DateTime.now().millisecondsSinceEpoch}',
+    );
   }
 }

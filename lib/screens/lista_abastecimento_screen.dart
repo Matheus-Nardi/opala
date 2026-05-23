@@ -103,18 +103,40 @@ class _ListaAbastecimentoScreenState extends State<ListaAbastecimentoScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text('Abastecimentos - ${widget.veiculo.modelo}'),
-        backgroundColor: Colors.blueGrey,
-        foregroundColor: Colors.white,
-        actions: [
-          IconButton(
-            icon: Icon(
-              _controller.temFiltrosAtivos ? Icons.filter_alt : Icons.filter_alt_outlined,
-            ),
-            onPressed: _abrirFiltros,
-          ),
-        ],
+      appBar: PreferredSize(
+        preferredSize: const Size.fromHeight(kToolbarHeight),
+        child: ListenableBuilder(
+          listenable: _controller,
+          builder: (context, _) {
+            return AppBar(
+              title: Text('Abastecimentos - ${widget.veiculo.modelo}'),
+              backgroundColor: Colors.blueGrey,
+              foregroundColor: Colors.white,
+              actions: [
+                IconButton(
+                  icon: const Icon(Icons.picture_as_pdf),
+                  onPressed: () {
+                    if (_controller.abastecimentosFiltrados.isEmpty) {
+                      SnackbarWidget.mostrar(
+                        context,
+                        'Não há dados para exportar.',
+                        corFundo: Colors.orangeAccent,
+                      );
+                      return;
+                    }
+                    _controller.exportarPdf();
+                  },
+                ),
+                IconButton(
+                  icon: Icon(
+                    _controller.temFiltrosAtivos ? Icons.filter_alt : Icons.filter_alt_outlined,
+                  ),
+                  onPressed: _abrirFiltros,
+                ),
+              ],
+            );
+          },
+        ),
       ),
       body: ListenableBuilder(
         listenable: _controller,
