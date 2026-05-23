@@ -1,7 +1,7 @@
 import 'package:opala/models/abastecimento.dart';
 
 class Veiculo {
-  final int id;
+  final int? id;
   final String marca;
   final String modelo;
   final int ano;
@@ -10,13 +10,14 @@ class Veiculo {
   List<Abastecimento> abastecimentos = [];
 
   Veiculo({
-    required this.id,
+    this.id,
     required this.marca,
     required this.modelo,
     required this.ano,
     required this.placa,
     required this.apelido,
   });
+
 
   double get totalGasto {
     double total = 0;
@@ -83,4 +84,27 @@ class Veiculo {
     if (ultimo > 0) return ultimo;
     return mediaGlobal;
   }
+
+  Map<String, dynamic> toMap() {
+    return {
+      if (id != null) 'id': id,
+      'marca': marca,
+      'modelo': modelo,
+      'ano': ano,
+      'placa': placa,
+      'apelido': apelido,
+    };
+  }
+
+  factory Veiculo.fromMap(Map<String, dynamic> map) {
+    return Veiculo(
+      id: map['id'],
+      marca: map['marca'],
+      modelo: map['modelo'],
+      ano: map['ano'],
+      placa: map['placa'],
+      apelido: map['apelido'],
+    );
+  }
 }
+

@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:opala/controllers/abastecimento_controller.dart';
+import 'package:opala/models/abastecimento.dart';
 import 'package:opala/models/veiculo.dart';
 import 'package:opala/screens/cadastro_abastecimento_screen.dart';
 import 'package:opala/utils/snackbar_util.dart';
@@ -15,15 +17,30 @@ class ListaAbastecimentoScreen extends StatefulWidget {
 }
 
 class _ListaAbastecimentoScreenState extends State<ListaAbastecimentoScreen> {
-  void _removerAbastecimento(int index) {
-    setState(() {
-      widget.veiculo.abastecimentos.removeAt(index);
-    });
+  late final AbastecimentoController _controller;
 
-    SnackbarWidget.mostrar(context, 'Abastecimento removido com sucesso!');
+  @override
+  void initState() {
+    super.initState();
+    _controller = AbastecimentoController(widget.veiculo);
+    _controller.carregarAbastecimentos();
   }
 
-  void _confirmarExclusao(int index) {
+  void _removerAbastecimento(Abastecimento abastecimento) async {
+    if (abastecimento.id == null) return;
+    try {
+      await _controller.deletarAbastecimento(abastecimento.id!);
+      if (mounted) {
+        SnackbarWidget.mostrar(context, 'Abastecimento removido com sucesso!');
+      }
+    } catch (e) {
+      if (mounted) {
+        SnackbarWidget.mostrar(context, 'Erro ao remover abastecimento.', corFundo: Colors.redAccent);
+      }
+    }
+  }
+
+  void _confirmarExclusao(Abastecimento abastecimento) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -41,7 +58,7 @@ class _ListaAbastecimentoScreenState extends State<ListaAbastecimentoScreen> {
           ),
           TextButton(
             onPressed: () {
-              _removerAbastecimento(index);
+              _removerAbastecimento(abastecimento);
               Navigator.pop(context);
             },
             child: const Text('Excluir', style: TextStyle(color: Colors.red)),
@@ -59,55 +76,80 @@ class _ListaAbastecimentoScreenState extends State<ListaAbastecimentoScreen> {
         backgroundColor: Colors.blueGrey,
         foregroundColor: Colors.white,
       ),
-
-      body: Column(
-        children: [
-          Expanded(
-            child: widget.veiculo.abastecimentos.isEmpty
-                ? const Center(
-                    child: TextoFormatado(
-                      'Nenhum abastecimento cadastrado.',
-                      tamanho: 16,
-                      cor: Colors.grey,
-                      estilo: FontStyle.italic,
-                    ),
-                  )
-                : ListView.builder(
-                    itemCount: widget.veiculo.abastecimentos.length,
-                    itemBuilder: (context, index) {
-                      return Padding(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 16.0,
-                          vertical: 8.0,
+      body: ListenableBuilder(
+        listenable: _controller,
+        builder: (context, _) {
+          if (_controller.carregando) {
+            return const Center(child: CircularProgressIndicator());
+          }
+          return Column(
+            children: [
+              Expanded(
+                child: _controller.abastecimentos.isEmpty
+                    ? const Center(
+                        child: TextoFormatado(
+                          'Nenhum abastecimento cadastrado.',
+                          tamanho: 16,
+                          cor: Colors.grey,
+                          estilo: FontStyle.italic,
                         ),
-                        child: InkWell(
-                          onLongPress: () => _confirmarExclusao(index),
-                          child: CardAbastecimentoWidget(
-                            abastecimento: widget.veiculo.abastecimentos[index],
-                          ),
-                        ),
-                      );
-                    },
-                  ),
-          ),
-        ],
+                      )
+                    : ListView.builder(
+                        itemCount: _controller.abastecimentos.length,
+                        itemBuilder: (context, index) {
+                          final abastecimentoAtual = _controller.abastecimentos[index];
+                          return Padding(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 16.0,
+                              vertical: 8.0,
+                            ),
+                            child: InkWell(
+                              onLongPress: () => _confirmarExclusao(abastecimentoAtual),
+                              child: CardAbastecimentoWidget(
+                                abastecimento: abastecimentoAtual,
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+              ),
+            ],
+          );
+        },
       ),
       floatingActionButton: FloatingActionButton(
         backgroundColor: Colors.blueGrey,
         foregroundColor: Colors.white,
         child: const Icon(Icons.add),
         onPressed: () async {
+          if (widget.veiculo.id == null) {
+            SnackbarWidget.mostrar(context, 'Erro: Veículo sem identificação válida.');
+            return;
+          }
+
           final novoAbastecimento = await Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (_) => const CadastroAbastecimentoScreen(),
+              builder: (_) => CadastroAbastecimentoScreen(veiculoId: widget.veiculo.id!),
             ),
           );
 
-          if (novoAbastecimento != null) {
-            setState(() {
-              widget.veiculo.abastecimentos.add(novoAbastecimento);
-            });
+          if (novoAbastecimento != null && novoAbastecimento is Abastecimento) {
+            try {
+              await _controller.adicionarAbastecimento(
+                posto: novoAbastecimento.posto,
+                tipoCombustivel: novoAbastecimento.tipoCombustivel,
+                quantidade: novoAbastecimento.quantidade,
+                valorTotal: novoAbastecimento.valorTotal,
+                odometro: novoAbastecimento.odometro,
+                tanqueCheio: novoAbastecimento.tanqueCheio,
+                data: novoAbastecimento.data,
+              );
+            } catch (e) {
+              if (mounted) {
+                SnackbarWidget.mostrar(context, 'Erro ao adicionar abastecimento.', corFundo: Colors.redAccent);
+              }
+            }
           }
         },
       ),

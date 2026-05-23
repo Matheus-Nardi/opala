@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:opala/models/abastecimento.dart';
 import 'package:opala/utils/snackbar_util.dart';
 import 'package:opala/widgets/texto_formatado_widget.dart';
 
 class CadastroAbastecimentoScreen extends StatefulWidget {
-  const CadastroAbastecimentoScreen({super.key});
+  final int veiculoId;
+  const CadastroAbastecimentoScreen({super.key, required this.veiculoId});
 
   @override
   State<CadastroAbastecimentoScreen> createState() =>
@@ -14,17 +16,25 @@ class CadastroAbastecimentoScreen extends StatefulWidget {
 class _CadastroAbastecimentoScreenState
     extends State<CadastroAbastecimentoScreen> {
   final _postoController = TextEditingController();
-  final _tipoCombustivelController = TextEditingController();
+  String? _tipoCombustivelSelecionado;
   final _quantidadeController = TextEditingController();
   final _valorTotalController = TextEditingController();
   final _odometroController = TextEditingController();
   final _dataController = TextEditingController();
   bool _tanqueCheio = true;
 
+  final List<String> _tiposCombustivel = ['Gasolina', 'Etanol', 'Diesel', 'GNV'];
+
+  @override
+  void initState() {
+    super.initState();
+    // Preenche com a data atual formatada por padrão para ajudar o usuário
+    _dataController.text = DateTime.now().toIso8601String().substring(0, 10);
+  }
+
   @override
   void dispose() {
     _postoController.dispose();
-    _tipoCombustivelController.dispose();
     _quantidadeController.dispose();
     _valorTotalController.dispose();
     _odometroController.dispose();
@@ -32,11 +42,38 @@ class _CadastroAbastecimentoScreenState
     super.dispose();
   }
 
+  Future<void> _selecionarData(BuildContext context) async {
+    final dataAtual = DateTime.tryParse(_dataController.text) ?? DateTime.now();
+    final dataSelecionada = await showDatePicker(
+      context: context,
+      initialDate: dataAtual,
+      firstDate: DateTime(2000),
+      lastDate: DateTime.now().add(const Duration(days: 365)),
+      builder: (context, child) {
+        return Theme(
+          data: Theme.of(context).copyWith(
+            colorScheme: const ColorScheme.light(
+              primary: Colors.blueGrey,
+              onPrimary: Colors.white,
+              onSurface: Colors.blueGrey,
+            ),
+          ),
+          child: child!,
+        );
+      },
+    );
+    if (dataSelecionada != null) {
+      setState(() {
+        _dataController.text = dataSelecionada.toIso8601String().substring(0, 10);
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     void salvarAbastecimento() {
       if (_postoController.text.isEmpty ||
-          _tipoCombustivelController.text.isEmpty ||
+          _tipoCombustivelSelecionado == null ||
           _quantidadeController.text.isEmpty ||
           _valorTotalController.text.isEmpty ||
           _odometroController.text.isEmpty ||
@@ -48,14 +85,14 @@ class _CadastroAbastecimentoScreenState
         );
         return;
       }
-      // Capturamos as referências ANTES do pop para evitar usar o context de um widget já fechado
+      
       final navigator = Navigator.of(context);
       final messenger = ScaffoldMessenger.of(context);
 
       final novoAbastecimento = Abastecimento(
-        id: DateTime.now().millisecondsSinceEpoch,
+        veiculoId: widget.veiculoId,
         posto: _postoController.text,
-        tipoCombustivel: _tipoCombustivelController.text,
+        tipoCombustivel: _tipoCombustivelSelecionado!,
         quantidade: double.tryParse(_quantidadeController.text) ?? 0,
         valorTotal: double.tryParse(_valorTotalController.text) ?? 0,
         odometro: double.tryParse(_odometroController.text) ?? 0,
@@ -68,6 +105,15 @@ class _CadastroAbastecimentoScreenState
       );
       navigator.pop(novoAbastecimento);
     }
+
+    final doubleFormatter = [
+      TextInputFormatter.withFunction((oldValue, newValue) {
+        // Converte vírgula para ponto dinamicamente para facilitar no teclado em Português
+        final newText = newValue.text.replaceAll(',', '.');
+        return newValue.copyWith(text: newText);
+      }),
+      FilteringTextInputFormatter.allow(RegExp(r'^\d+\.?\d*')),
+    ];
 
     return Scaffold(
       appBar: AppBar(
@@ -95,47 +141,64 @@ class _CadastroAbastecimentoScreenState
               ),
             ),
             const SizedBox(height: 12),
-            TextField(
-              controller: _tipoCombustivelController,
+            DropdownButtonFormField<String>(
+              value: _tipoCombustivelSelecionado,
               decoration: const InputDecoration(
                 labelText: 'Tipo de Combustível*',
                 border: OutlineInputBorder(),
               ),
+              items: _tiposCombustivel.map((tipo) {
+                return DropdownMenuItem<String>(
+                  value: tipo,
+                  child: Text(tipo),
+                );
+              }).toList(),
+              onChanged: (value) {
+                setState(() {
+                  _tipoCombustivelSelecionado = value;
+                });
+              },
             ),
             const SizedBox(height: 12),
             TextField(
               controller: _quantidadeController,
               decoration: const InputDecoration(
-                labelText: 'Quantidade*',
+                labelText: 'Quantidade (L)*',
                 border: OutlineInputBorder(),
               ),
-              keyboardType: TextInputType.number,
+              keyboardType: const TextInputType.numberWithOptions(decimal: true),
+              inputFormatters: doubleFormatter,
             ),
             const SizedBox(height: 12),
             TextField(
               controller: _valorTotalController,
               decoration: const InputDecoration(
-                labelText: 'Valor Total*',
+                labelText: 'Valor Total (R\$)*',
                 border: OutlineInputBorder(),
               ),
-              keyboardType: TextInputType.number,
+              keyboardType: const TextInputType.numberWithOptions(decimal: true),
+              inputFormatters: doubleFormatter,
             ),
             const SizedBox(height: 12),
             TextField(
               controller: _odometroController,
               decoration: const InputDecoration(
-                labelText: 'Odômetro*',
+                labelText: 'Odômetro (km)*',
                 border: OutlineInputBorder(),
               ),
-              keyboardType: TextInputType.number,
+              keyboardType: const TextInputType.numberWithOptions(decimal: true),
+              inputFormatters: doubleFormatter,
             ),
             const SizedBox(height: 12),
             TextField(
               controller: _dataController,
+              readOnly: true,
               decoration: const InputDecoration(
                 labelText: 'Data*',
                 border: OutlineInputBorder(),
+                suffixIcon: Icon(Icons.calendar_today, color: Colors.blueGrey),
               ),
+              onTap: () => _selecionarData(context),
             ),
             const SizedBox(height: 12),
             SwitchListTile(

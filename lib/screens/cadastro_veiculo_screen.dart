@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:opala/models/veiculo.dart';
 import 'package:opala/widgets/texto_formatado_widget.dart';
 import 'package:opala/utils/snackbar_util.dart'; 
@@ -13,7 +14,7 @@ class CadastroVeiculoScreen extends StatefulWidget {
 class _CadastroVeiculoScreenState extends State<CadastroVeiculoScreen> {
   final _marcaController = TextEditingController();
   final _modeloController = TextEditingController();
-  final _anoController = TextEditingController();
+  int? _anoSelecionado;
   final _placaController = TextEditingController();
   final _apelidoController = TextEditingController();
 
@@ -21,7 +22,6 @@ class _CadastroVeiculoScreenState extends State<CadastroVeiculoScreen> {
   void dispose() {
     _marcaController.dispose();
     _modeloController.dispose();
-    _anoController.dispose();
     _placaController.dispose();
     _apelidoController.dispose();
     super.dispose();
@@ -30,22 +30,20 @@ class _CadastroVeiculoScreenState extends State<CadastroVeiculoScreen> {
   void _salvarVeiculo() {
     if (_marcaController.text.isEmpty ||
         _modeloController.text.isEmpty ||
-        _anoController.text.isEmpty ||
+        _anoSelecionado == null ||
         _placaController.text.isEmpty) {
       
       SnackbarWidget.mostrar(context, 'Preencha os campos obrigatórios.', corFundo: Colors.grey.shade800);
       return; 
     }
 
-    // Capturamos referências antes do pop
     final navigator = Navigator.of(context);
     final messenger = ScaffoldMessenger.of(context);
 
     final novoVeiculo = Veiculo(
-      id: DateTime.now().millisecondsSinceEpoch,
       marca: _marcaController.text,
       modelo: _modeloController.text,
-      ano: int.tryParse(_anoController.text) ?? 0,
+      ano: _anoSelecionado!,
       placa: _placaController.text,
       apelido: _apelidoController.text,
     );
@@ -86,15 +84,36 @@ class _CadastroVeiculoScreenState extends State<CadastroVeiculoScreen> {
               decoration: const InputDecoration(labelText: 'Modelo*', border: OutlineInputBorder()),
             ),
             const SizedBox(height: 12),
-            TextField(
-              controller: _anoController,
-              decoration: const InputDecoration(labelText: 'Ano*', border: OutlineInputBorder()),
-              keyboardType: TextInputType.number,
+            DropdownButtonFormField<int>(
+              value: _anoSelecionado,
+              decoration: const InputDecoration(
+                labelText: 'Ano*',
+                border: OutlineInputBorder(),
+              ),
+              items: List.generate(
+                (DateTime.now().year + 1) - 1950 + 1,
+                (index) => (DateTime.now().year + 1) - index,
+              ).map((ano) {
+                return DropdownMenuItem<int>(
+                  value: ano,
+                  child: Text(ano.toString()),
+                );
+              }).toList(),
+              onChanged: (value) {
+                setState(() {
+                  _anoSelecionado = value;
+                });
+              },
             ),
             const SizedBox(height: 12),
             TextField(
               controller: _placaController,
               decoration: const InputDecoration(labelText: 'Placa*', border: OutlineInputBorder()),
+              inputFormatters: [
+                TextInputFormatter.withFunction((oldValue, newValue) {
+                  return newValue.copyWith(text: newValue.text.toUpperCase());
+                }),
+              ],
             ),
             const SizedBox(height: 12),
             TextField(

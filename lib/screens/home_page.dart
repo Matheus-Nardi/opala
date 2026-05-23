@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:opala/controllers/veiculo_controller.dart';
 import 'package:opala/models/veiculo.dart';
 import 'package:opala/screens/cadastro_veiculo_screen.dart';
 import 'package:opala/screens/lista_abastecimento_screen.dart';
@@ -14,16 +15,29 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  List<Veiculo> listaVeiculos = []; // Nosso "banco de dados" temporário
+  final VeiculoController _controller = VeiculoController();
 
-  void _removerVeiculo(int index) {
-    setState(() {
-      listaVeiculos.removeAt(index);
-    });
-    SnackbarWidget.mostrar(context, 'Veículo removido com sucesso!');
+  @override
+  void initState() {
+    super.initState();
+    _controller.carregarVeiculos();
   }
 
-  void _confirmarExclusao(int index) {
+  void _removerVeiculo(Veiculo veiculo) async {
+    if (veiculo.id == null) return;
+    try {
+      await _controller.deletarVeiculo(veiculo.id!);
+      if (mounted) {
+        SnackbarWidget.mostrar(context, 'Veículo removido com sucesso!');
+      }
+    } catch (e) {
+      if (mounted) {
+        SnackbarWidget.mostrar(context, 'Erro ao remover veículo.', corFundo: Colors.redAccent);
+      }
+    }
+  }
+
+  void _confirmarExclusao(Veiculo veiculo) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -41,7 +55,7 @@ class _HomePageState extends State<HomePage> {
           ),
           TextButton(
             onPressed: () {
-              _removerVeiculo(index);
+              _removerVeiculo(veiculo);
               Navigator.pop(context);
             },
             child: const Text('Excluir', style: TextStyle(color: Colors.red)),
@@ -69,62 +83,75 @@ class _HomePageState extends State<HomePage> {
             MaterialPageRoute(builder: (_) => const CadastroVeiculoScreen()),
           );
 
-          if (novoVeiculo != null) {
-            setState(() {
-              listaVeiculos.add(novoVeiculo);
-            });
+          if (novoVeiculo != null && novoVeiculo is Veiculo) {
+            try {
+              await _controller.adicionarVeiculo(novoVeiculo);
+            } catch (e) {
+              if (mounted) {
+                SnackbarWidget.mostrar(context, 'Erro ao cadastrar veículo.', corFundo: Colors.redAccent);
+              }
+            }
           }
         },
       ),
-      body: Column(
-        children: [
-          const TextoFormatado(
-            'Seus Veículos',
-            tamanho: 24,
-            peso: FontWeight.bold,
-            cor: Colors.blueGrey,
-            padding: 20,
-          ),
-          const SizedBox(height: 8),
-          Expanded(
-            child: listaVeiculos.isEmpty
-                ? const Center(
-                    child: TextoFormatado(
-                      'Nenhum veículo cadastrado.',
-                      tamanho: 16,
-                      cor: Colors.grey,
-                      estilo: FontStyle.italic,
-                    ),
-                  )
-                : ListView.builder(
-                    itemCount: listaVeiculos.length,
-                    itemBuilder: (context, index) {
-                final veiculoAtual = listaVeiculos[index];
-                return Padding(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 16.0,
-                    vertical: 8.0,
-                  ),
-                  child: InkWell(
-                    onTap: () async {
-                      await Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) =>
-                              ListaAbastecimentoScreen(veiculo: veiculoAtual),
+      body: ListenableBuilder(
+        listenable: _controller,
+        builder: (context, _) {
+          if (_controller.carregando) {
+            return const Center(child: CircularProgressIndicator());
+          }
+          return Column(
+            children: [
+              const TextoFormatado(
+                'Seus Veículos',
+                tamanho: 24,
+                peso: FontWeight.bold,
+                cor: Colors.blueGrey,
+                padding: 20,
+              ),
+              const SizedBox(height: 8),
+              Expanded(
+                child: _controller.veiculos.isEmpty
+                    ? const Center(
+                        child: TextoFormatado(
+                          'Nenhum veículo cadastrado.',
+                          tamanho: 16,
+                          cor: Colors.grey,
+                          estilo: FontStyle.italic,
                         ),
-                      );
+                      )
+                    : ListView.builder(
+                        itemCount: _controller.veiculos.length,
+                        itemBuilder: (context, index) {
+                          final veiculoAtual = _controller.veiculos[index];
+                          return Padding(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 16.0,
+                              vertical: 8.0,
+                            ),
+                            child: InkWell(
+                              onTap: () async {
+                                await Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) =>
+                                        ListaAbastecimentoScreen(veiculo: veiculoAtual),
+                                  ),
+                                );
 
-                      setState(() {});
-                    },
-                    onLongPress: () => _confirmarExclusao(index),
-                    child: CardVeiculoWidget(veiculo: veiculoAtual),
-                  ),
-                );
-              },
-            ),
-          ),
-        ],
+                                // Ao retornar, atualiza a lista de veículos para re-calcular as médias baseadas em novos abastecimentos
+                                _controller.carregarVeiculos();
+                              },
+                              onLongPress: () => _confirmarExclusao(veiculoAtual),
+                              child: CardVeiculoWidget(veiculo: veiculoAtual),
+                            ),
+                          );
+                        },
+                      ),
+              ),
+            ],
+          );
+        },
       ),
     );
   }
