@@ -10,16 +10,18 @@ class VeiculoController extends ChangeNotifier {
 
   List<Veiculo> _veiculos = [];
   bool _carregando = false;
+  String _busca = '';
 
   List<Veiculo> get veiculos => _veiculos;
   bool get carregando => _carregando;
+  String get busca => _busca;
 
   Future<void> carregarVeiculos() async {
     _carregando = true;
     notifyListeners();
 
     try {
-      final veiculosList = await _service.obterVeiculos();
+      final veiculosList = await _service.obterVeiculos(busca: _busca);
       final todosAbastecimentos = await _abastecimentoService.obterTodosAbastecimentos();
 
       for (var veiculo in veiculosList) {
@@ -35,6 +37,11 @@ class VeiculoController extends ChangeNotifier {
       _carregando = false;
       notifyListeners();
     }
+  }
+
+  void definirBusca(String valor) {
+    _busca = valor;
+    carregarVeiculos();
   }
 
 

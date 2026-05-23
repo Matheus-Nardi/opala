@@ -17,11 +17,18 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   final VeiculoController _controller = VeiculoController();
+  final TextEditingController _searchController = TextEditingController();
 
   @override
   void initState() {
     super.initState();
     _controller.carregarVeiculos();
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
   }
 
   void _removerVeiculo(Veiculo veiculo) async {
@@ -185,9 +192,6 @@ class _HomePageState extends State<HomePage> {
       body: ListenableBuilder(
         listenable: _controller,
         builder: (context, _) {
-          if (_controller.carregando) {
-            return const Center(child: CircularProgressIndicator());
-          }
           return Column(
             children: [
               const TextoFormatado(
@@ -197,45 +201,79 @@ class _HomePageState extends State<HomePage> {
                 cor: Colors.blueGrey,
                 padding: 20,
               ),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                child: TextField(
+                  controller: _searchController,
+                  decoration: InputDecoration(
+                    hintText: 'Pesquisar por apelido, marca ou modelo...',
+                    prefixIcon: const Icon(Icons.search, color: Colors.blueGrey),
+                    suffixIcon: _searchController.text.isNotEmpty
+                        ? IconButton(
+                            icon: const Icon(Icons.clear, color: Colors.redAccent),
+                            onPressed: () {
+                              _searchController.clear();
+                              _controller.definirBusca('');
+                            },
+                          )
+                        : null,
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12.0),
+                      borderSide: const BorderSide(color: Colors.blueGrey),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12.0),
+                      borderSide: const BorderSide(color: Colors.blueGrey, width: 2.0),
+                    ),
+                  ),
+                  onChanged: (value) {
+                    _controller.definirBusca(value);
+                  },
+                ),
+              ),
               const SizedBox(height: 8),
               Expanded(
-                child: _controller.veiculos.isEmpty
-                    ? const Center(
-                        child: TextoFormatado(
-                          'Nenhum veículo cadastrado.',
-                          tamanho: 16,
-                          cor: Colors.grey,
-                          estilo: FontStyle.italic,
-                        ),
-                      )
-                    : ListView.builder(
-                        itemCount: _controller.veiculos.length,
-                        itemBuilder: (context, index) {
-                          final veiculoAtual = _controller.veiculos[index];
-                          return Padding(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 16.0,
-                              vertical: 8.0,
+                child: _controller.carregando
+                    ? const Center(child: CircularProgressIndicator())
+                    : (_controller.veiculos.isEmpty
+                        ? Center(
+                            child: TextoFormatado(
+                              _controller.busca.isNotEmpty
+                                  ? 'Nenhum veículo encontrado para "${_controller.busca}".'
+                                  : 'Nenhum veículo cadastrado.',
+                              tamanho: 16,
+                              cor: Colors.grey,
+                              estilo: FontStyle.italic,
                             ),
-                            child: InkWell(
-                              onTap: () async {
-                                await Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) =>
-                                        ListaAbastecimentoScreen(veiculo: veiculoAtual),
-                                  ),
-                                );
+                          )
+                        : ListView.builder(
+                            itemCount: _controller.veiculos.length,
+                            itemBuilder: (context, index) {
+                              final veiculoAtual = _controller.veiculos[index];
+                              return Padding(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 16.0,
+                                  vertical: 8.0,
+                                ),
+                                child: InkWell(
+                                  onTap: () async {
+                                    await Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) =>
+                                            ListaAbastecimentoScreen(veiculo: veiculoAtual),
+                                      ),
+                                    );
 
-                                // Ao retornar, atualiza a lista de veículos para re-calcular as médias baseadas em novos abastecimentos
-                                _controller.carregarVeiculos();
-                              },
-                              onLongPress: () => _confirmarExclusao(veiculoAtual),
-                              child: CardVeiculoWidget(veiculo: veiculoAtual),
-                            ),
-                          );
-                        },
-                      ),
+                                    // Ao retornar, atualiza a lista de veículos para re-calcular as médias baseadas em novos abastecimentos
+                                    _controller.carregarVeiculos();
+                                  },
+                                  onLongPress: () => _confirmarExclusao(veiculoAtual),
+                                  child: CardVeiculoWidget(veiculo: veiculoAtual),
+                                ),
+                              );
+                            },
+                          )),
               ),
             ],
           );

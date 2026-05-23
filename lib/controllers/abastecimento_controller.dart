@@ -9,8 +9,24 @@ class AbastecimentoController extends ChangeNotifier {
 
   bool _carregando = false;
 
+  String? _filtroTipoCombustivel;
+  DateTime? _filtroDataInicial;
+  DateTime? _filtroDataFinal;
+
+  List<Abastecimento> _abastecimentosFiltrados = [];
+
   bool get carregando => _carregando;
   List<Abastecimento> get abastecimentos => veiculo.abastecimentos;
+  List<Abastecimento> get abastecimentosFiltrados => _abastecimentosFiltrados;
+
+  String? get filtroTipoCombustivel => _filtroTipoCombustivel;
+  DateTime? get filtroDataInicial => _filtroDataInicial;
+  DateTime? get filtroDataFinal => _filtroDataFinal;
+
+  bool get temFiltrosAtivos =>
+      _filtroTipoCombustivel != null ||
+      _filtroDataInicial != null ||
+      _filtroDataFinal != null;
 
   AbastecimentoController(this.veiculo);
 
@@ -20,14 +36,56 @@ class AbastecimentoController extends ChangeNotifier {
     notifyListeners();
 
     try {
-      final list = await _service.obterAbastecimentosPorVeiculo(veiculo.id!);
-      veiculo.abastecimentos = list;
+      // Sempre carrega a lista completa no veículo para cálculo de estatísticas
+      final listCompleta = await _service.obterAbastecimentosPorVeiculo(veiculo.id!);
+      veiculo.abastecimentos = listCompleta;
+
+      if (temFiltrosAtivos) {
+        // Se houver filtros ativos, carrega os abastecimentos filtrados do Supabase
+        _abastecimentosFiltrados = await _service.obterAbastecimentosPorVeiculo(
+          veiculo.id!,
+          tipoCombustivel: _filtroTipoCombustivel,
+          dataInicial: _filtroDataInicial,
+          dataFinal: _filtroDataFinal,
+        );
+      } else {
+        _abastecimentosFiltrados = listCompleta;
+      }
     } catch (e) {
       debugPrint('Erro ao carregar abastecimentos: $e');
     } finally {
       _carregando = false;
       notifyListeners();
     }
+  }
+
+  void aplicarFiltros({
+    String? tipoCombustivel,
+    DateTime? dataInicial,
+    DateTime? dataFinal,
+  }) {
+    _filtroTipoCombustivel = tipoCombustivel;
+    _filtroDataInicial = dataInicial;
+    _filtroDataFinal = dataFinal;
+    carregarAbastecimentos();
+  }
+
+  void limparFiltros() {
+    _filtroTipoCombustivel = null;
+    _filtroDataInicial = null;
+    _filtroDataFinal = null;
+    carregarAbastecimentos();
+  }
+
+  void removerFiltroTipo() {
+    _filtroTipoCombustivel = null;
+    carregarAbastecimentos();
+  }
+
+  void removerFiltroPeriodo() {
+    _filtroDataInicial = null;
+    _filtroDataFinal = null;
+    carregarAbastecimentos();
   }
 
   Future<void> adicionarAbastecimento({
@@ -53,10 +111,7 @@ class AbastecimentoController extends ChangeNotifier {
       );
 
       final salvo = await _service.adicionarAbastecimento(novoAbastecimento);
-      veiculo.abastecimentos.add(salvo);
-      // Ordena por odômetro após adicionar para que a matemática de consumo permaneça correta
-      veiculo.abastecimentos.sort((a, b) => a.odometro.compareTo(b.odometro));
-      notifyListeners();
+      await carregarAbastecimentos();
     } catch (e) {
       debugPrint('Erro ao adicionar abastecimento: $e');
       rethrow;
@@ -66,8 +121,7 @@ class AbastecimentoController extends ChangeNotifier {
   Future<void> deletarAbastecimento(int id) async {
     try {
       await _service.deletarAbastecimento(id);
-      veiculo.abastecimentos.removeWhere((a) => a.id == id);
-      notifyListeners();
+      await carregarAbastecimentos();
     } catch (e) {
       debugPrint('Erro ao deletar abastecimento: $e');
       rethrow;

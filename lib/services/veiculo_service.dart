@@ -5,11 +5,15 @@ import '../models/veiculo.dart';
 class VeiculoService {
   final _client = Supabase.instance.client;
 
-  Future<List<Veiculo>> obterVeiculos() async {
-    final response = await _client
-        .from('veiculos')
-        .select()
-        .order('id', ascending: true);
+  Future<List<Veiculo>> obterVeiculos({String? busca}) async {
+    var query = _client.from('veiculos').select();
+    
+    if (busca != null && busca.trim().isNotEmpty) {
+      final termo = busca.trim();
+      query = query.or('apelido.ilike.%$termo%,marca.ilike.%$termo%,modelo.ilike.%$termo%');
+    }
+    
+    final response = await query.order('id', ascending: true);
     
     return (response as List).map((item) => Veiculo.fromMap(item)).toList();
   }

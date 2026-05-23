@@ -68,6 +68,38 @@ class _ListaAbastecimentoScreenState extends State<ListaAbastecimentoScreen> {
     );
   }
 
+  String _formatarData(DateTime? dt) {
+    if (dt == null) return '';
+    return '${dt.day.toString().padLeft(2, '0')}/${dt.month.toString().padLeft(2, '0')}/${dt.year}';
+  }
+
+  void _abrirFiltros() {
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      isScrollControlled: true,
+      builder: (context) {
+        return _FiltroBottomSheet(
+          filtroTipoCombustivel: _controller.filtroTipoCombustivel,
+          filtroDataInicial: _controller.filtroDataInicial,
+          filtroDataFinal: _controller.filtroDataFinal,
+          onAplicar: (tipo, inicio, fim) {
+            _controller.aplicarFiltros(
+              tipoCombustivel: tipo,
+              dataInicial: inicio,
+              dataFinal: fim,
+            );
+          },
+          onLimpar: () {
+            _controller.limparFiltros();
+          },
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -75,6 +107,14 @@ class _ListaAbastecimentoScreenState extends State<ListaAbastecimentoScreen> {
         title: Text('Abastecimentos - ${widget.veiculo.modelo}'),
         backgroundColor: Colors.blueGrey,
         foregroundColor: Colors.white,
+        actions: [
+          IconButton(
+            icon: Icon(
+              _controller.temFiltrosAtivos ? Icons.filter_alt : Icons.filter_alt_outlined,
+            ),
+            onPressed: _abrirFiltros,
+          ),
+        ],
       ),
       body: ListenableBuilder(
         listenable: _controller,
@@ -82,22 +122,73 @@ class _ListaAbastecimentoScreenState extends State<ListaAbastecimentoScreen> {
           if (_controller.carregando) {
             return const Center(child: CircularProgressIndicator());
           }
+
+          List<Widget> chips = [];
+          if (_controller.filtroTipoCombustivel != null) {
+            chips.add(
+              Chip(
+                label: Text('Combustível: ${_controller.filtroTipoCombustivel}'),
+                deleteIcon: const Icon(Icons.close, size: 18),
+                onDeleted: () {
+                  _controller.removerFiltroTipo();
+                },
+              ),
+            );
+          }
+          if (_controller.filtroDataInicial != null || _controller.filtroDataFinal != null) {
+            String label = 'Período: ';
+            if (_controller.filtroDataInicial != null) {
+              label += _formatarData(_controller.filtroDataInicial);
+            }
+            label += ' até ';
+            if (_controller.filtroDataFinal != null) {
+              label += _formatarData(_controller.filtroDataFinal);
+            }
+            chips.add(
+              Chip(
+                label: Text(label),
+                deleteIcon: const Icon(Icons.close, size: 18),
+                onDeleted: () {
+                  _controller.removerFiltroPeriodo();
+                },
+              ),
+            );
+          }
+
+          final Widget chipsRow = chips.isEmpty
+              ? const SizedBox.shrink()
+              : SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                  child: Row(
+                    children: chips
+                        .map((c) => Padding(
+                              padding: const EdgeInsets.only(right: 8.0),
+                              child: c,
+                            ))
+                        .toList(),
+                  ),
+                );
+
           return Column(
             children: [
+              chipsRow,
               Expanded(
-                child: _controller.abastecimentos.isEmpty
-                    ? const Center(
+                child: _controller.abastecimentosFiltrados.isEmpty
+                    ? Center(
                         child: TextoFormatado(
-                          'Nenhum abastecimento cadastrado.',
+                          _controller.temFiltrosAtivos
+                              ? 'Nenhum abastecimento encontrado para os filtros selecionados.'
+                              : 'Nenhum abastecimento cadastrado.',
                           tamanho: 16,
                           cor: Colors.grey,
                           estilo: FontStyle.italic,
                         ),
                       )
                     : ListView.builder(
-                        itemCount: _controller.abastecimentos.length,
+                        itemCount: _controller.abastecimentosFiltrados.length,
                         itemBuilder: (context, index) {
-                          final abastecimentoAtual = _controller.abastecimentos[index];
+                          final abastecimentoAtual = _controller.abastecimentosFiltrados[index];
                           return Padding(
                             padding: const EdgeInsets.symmetric(
                               horizontal: 16.0,
@@ -156,3 +247,209 @@ class _ListaAbastecimentoScreenState extends State<ListaAbastecimentoScreen> {
     );
   }
 }
+
+class _FiltroBottomSheet extends StatefulWidget {
+  final String? filtroTipoCombustivel;
+  final DateTime? filtroDataInicial;
+  final DateTime? filtroDataFinal;
+  final Function(String?, DateTime?, DateTime?) onAplicar;
+  final VoidCallback onLimpar;
+
+  const _FiltroBottomSheet({
+    required this.filtroTipoCombustivel,
+    required this.filtroDataInicial,
+    required this.filtroDataFinal,
+    required this.onAplicar,
+    required this.onLimpar,
+  });
+
+  @override
+  State<_FiltroBottomSheet> createState() => _FiltroBottomSheetState();
+}
+
+class _FiltroBottomSheetState extends State<_FiltroBottomSheet> {
+  String? _tipoCombustivel;
+  DateTime? _dataInicial;
+  DateTime? _dataFinal;
+
+  @override
+  void initState() {
+    super.initState();
+    _tipoCombustivel = widget.filtroTipoCombustivel;
+    _dataInicial = widget.filtroDataInicial;
+    _dataFinal = widget.filtroDataFinal;
+  }
+
+  Future<void> _selecionarDataInicial(BuildContext context) async {
+    final data = await showDatePicker(
+      context: context,
+      initialDate: _dataInicial ?? DateTime.now(),
+      firstDate: DateTime(2000),
+      lastDate: DateTime.now().add(const Duration(days: 365)),
+      builder: (context, child) {
+        return Theme(
+          data: Theme.of(context).copyWith(
+            colorScheme: const ColorScheme.light(
+              primary: Colors.blueGrey,
+              onPrimary: Colors.white,
+              onSurface: Colors.blueGrey,
+            ),
+          ),
+          child: child!,
+        );
+      },
+    );
+    if (data != null) {
+      setState(() {
+        _dataInicial = data;
+        if (_dataFinal != null && _dataFinal!.isBefore(data)) {
+          _dataFinal = data;
+        }
+      });
+    }
+  }
+
+  Future<void> _selecionarDataFinal(BuildContext context) async {
+    final data = await showDatePicker(
+      context: context,
+      initialDate: _dataFinal ?? _dataInicial ?? DateTime.now(),
+      firstDate: _dataInicial ?? DateTime(2000),
+      lastDate: DateTime.now().add(const Duration(days: 365)),
+      builder: (context, child) {
+        return Theme(
+          data: Theme.of(context).copyWith(
+            colorScheme: const ColorScheme.light(
+              primary: Colors.blueGrey,
+              onPrimary: Colors.white,
+              onSurface: Colors.blueGrey,
+            ),
+          ),
+          child: child!,
+        );
+      },
+    );
+    if (data != null) {
+      setState(() {
+        _dataFinal = data;
+      });
+    }
+  }
+
+  String _formatarData(DateTime? dt) {
+    if (dt == null) return 'Selecionar';
+    return '${dt.day.toString().padLeft(2, '0')}/${dt.month.toString().padLeft(2, '0')}/${dt.year}';
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: EdgeInsets.only(
+        left: 16.0,
+        right: 16.0,
+        top: 20.0,
+        bottom: MediaQuery.of(context).viewInsets.bottom + 24.0,
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const TextoFormatado(
+            'Filtrar Abastecimentos',
+            tamanho: 20,
+            peso: FontWeight.bold,
+            cor: Colors.blueGrey,
+          ),
+          const SizedBox(height: 16),
+          DropdownButtonFormField<String>(
+            value: _tipoCombustivel,
+            decoration: const InputDecoration(
+              labelText: 'Tipo de Combustível',
+              border: OutlineInputBorder(),
+            ),
+            items: [
+              const DropdownMenuItem<String>(
+                value: null,
+                child: Text('Todos'),
+              ),
+              ...['Gasolina', 'Etanol', 'Diesel', 'GNV'].map((tipo) {
+                return DropdownMenuItem<String>(
+                  value: tipo,
+                  child: Text(tipo),
+                );
+              }),
+            ],
+            onChanged: (value) {
+              setState(() {
+                _tipoCombustivel = value;
+              });
+            },
+          ),
+          const SizedBox(height: 16),
+          const TextoFormatado(
+            'Período',
+            tamanho: 16,
+            peso: FontWeight.bold,
+            cor: Colors.blueGrey,
+          ),
+          const SizedBox(height: 8),
+          Row(
+            children: [
+              Expanded(
+                child: OutlinedButton.icon(
+                  onPressed: () => _selecionarDataInicial(context),
+                  icon: const Icon(Icons.date_range, size: 18, color: Colors.blueGrey),
+                  label: Text(
+                    'De: ${_formatarData(_dataInicial)}',
+                    style: const TextStyle(color: Colors.blueGrey, fontSize: 12),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: OutlinedButton.icon(
+                  onPressed: () => _selecionarDataFinal(context),
+                  icon: const Icon(Icons.date_range, size: 18, color: Colors.blueGrey),
+                  label: Text(
+                    'Até: ${_formatarData(_dataFinal)}',
+                    style: const TextStyle(color: Colors.blueGrey, fontSize: 12),
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 24),
+          Row(
+            children: [
+              Expanded(
+                child: OutlinedButton(
+                  onPressed: () {
+                    widget.onLimpar();
+                    Navigator.pop(context);
+                  },
+                  style: OutlinedButton.styleFrom(
+                    side: const BorderSide(color: Colors.redAccent),
+                  ),
+                  child: const Text('Limpar Filtros', style: TextStyle(color: Colors.redAccent)),
+                ),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: ElevatedButton(
+                  onPressed: () {
+                    widget.onAplicar(_tipoCombustivel, _dataInicial, _dataFinal);
+                    Navigator.pop(context);
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.blueGrey,
+                  ),
+                  child: const Text('Aplicar', style: TextStyle(color: Colors.white)),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
