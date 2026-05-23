@@ -73,35 +73,93 @@ class _HomePageState extends State<HomePage> {
         title: const Text('Opala - Controle de Veículos'),
         backgroundColor: Colors.blueGrey,
         foregroundColor: Colors.white,
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.logout),
-            tooltip: 'Sair',
-            onPressed: () async {
-              final confirmar = await showDialog<bool>(
-                context: context,
-                builder: (context) => AlertDialog(
-                  title: const Text('Sair do App'),
-                  content: const Text('Deseja realmente encerrar sua sessão?'),
-                  actions: [
-                    TextButton(
-                      onPressed: () => Navigator.pop(context, false),
-                      child: const Text('Cancelar', style: TextStyle(color: Colors.blueGrey)),
-                    ),
-                    TextButton(
-                      onPressed: () => Navigator.pop(context, true),
-                      child: const Text('Sair', style: TextStyle(color: Colors.red)),
-                    ),
-                  ],
-                ),
-              );
+      ),
+      drawer: Drawer(
+        child: Column(
+          children: [
+            Builder(
+              builder: (context) {
+                final user = AuthService.usuarioAtual;
+                final metadata = user?.userMetadata;
+                final String? nome = metadata?['full_name'] ?? metadata?['name'];
+                final String? fotoUrl = metadata?['avatar_url'];
+                final String? email = user?.email;
 
-              if (confirmar == true) {
-                await AuthService.sair();
-              }
-            },
-          ),
-        ],
+                return UserAccountsDrawerHeader(
+                  decoration: const BoxDecoration(
+                    color: Colors.blueGrey,
+                  ),
+                  currentAccountPicture: CircleAvatar(
+                    backgroundColor: Colors.white,
+                    backgroundImage: fotoUrl != null ? NetworkImage(fotoUrl) : null,
+                    child: fotoUrl == null
+                        ? Text(
+                            (nome ?? email ?? 'U').substring(0, 1).toUpperCase(),
+                            style: const TextStyle(
+                              fontSize: 32,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.blueGrey,
+                            ),
+                          )
+                        : null,
+                  ),
+                  accountName: Text(
+                    nome ?? 'Usuário Opala',
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 18,
+                    ),
+                  ),
+                  accountEmail: Text(email ?? ''),
+                );
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.directions_car, color: Colors.blueGrey),
+              title: const Text('Meus Veículos'),
+              onTap: () {
+                Navigator.pop(context); // Fecha o Drawer
+              },
+            ),
+            const Divider(),
+            const Spacer(),
+            const Divider(),
+            ListTile(
+              leading: const Icon(Icons.logout, color: Colors.redAccent),
+              title: const Text(
+                'Sair da Conta',
+                style: TextStyle(color: Colors.redAccent, fontWeight: FontWeight.bold),
+              ),
+              onTap: () async {
+                final confirmar = await showDialog<bool>(
+                  context: context,
+                  builder: (context) => AlertDialog(
+                    title: const Text('Sair do App'),
+                    content: const Text('Deseja realmente encerrar sua sessão?'),
+                    actions: [
+                      TextButton(
+                        onPressed: () => Navigator.pop(context, false),
+                        child: const Text('Cancelar', style: TextStyle(color: Colors.blueGrey)),
+                      ),
+                      TextButton(
+                        onPressed: () => Navigator.pop(context, true),
+                        child: const Text('Sair', style: TextStyle(color: Colors.red)),
+                      ),
+                    ],
+                  ),
+                );
+
+                if (confirmar == true) {
+                  if (context.mounted) {
+                    Navigator.pop(context); // Fecha o Drawer
+                  }
+                  await AuthService.sair();
+                }
+              },
+            ),
+            const SizedBox(height: 16),
+          ],
+        ),
       ),
       floatingActionButton: FloatingActionButton(
         backgroundColor: Colors.blueGrey,

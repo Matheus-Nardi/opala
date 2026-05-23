@@ -85,6 +85,33 @@ class _LoginScreenState extends State<LoginScreen> {
     }
   }
 
+  Future<void> _entrarComGoogle() async {
+    setState(() {
+      _carregando = true;
+    });
+
+    try {
+      await AuthService.entrarComGoogle();
+      if (mounted) {
+        SnackbarWidget.mostrar(context, 'Conectando ao Google...');
+      }
+    } catch (e) {
+      if (mounted) {
+        SnackbarWidget.mostrar(
+          context,
+          'Erro ao autenticar com o Google.',
+          corFundo: Colors.redAccent,
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _carregando = false;
+        });
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -214,6 +241,54 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                 ),
                 const SizedBox(height: 16),
+
+                if (_modoLogin) ...[
+                  const Row(
+                    children: [
+                      Expanded(child: Divider()),
+                      Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 16),
+                        child: TextoFormatado('ou', cor: Colors.grey, tamanho: 14),
+                      ),
+                      Expanded(child: Divider()),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+                  SizedBox(
+                    height: 50,
+                    child: OutlinedButton(
+                      onPressed: _carregando ? null : _entrarComGoogle,
+                      style: OutlinedButton.styleFrom(
+                        side: BorderSide(color: Colors.grey.shade300),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Image.network(
+                            'https://upload.wikimedia.org/wikipedia/commons/thumb/c/c1/Google_%22G%22_logo.svg/24px-Google_%22G%22_logo.svg.png',
+                            height: 24,
+                            errorBuilder: (context, error, stackTrace) => const Icon(
+                              Icons.g_mobiledata,
+                              color: Colors.blueGrey,
+                              size: 24,
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          const TextoFormatado(
+                            'Entrar com o Google',
+                            cor: Colors.blueGrey,
+                            tamanho: 16,
+                            peso: FontWeight.bold,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                ],
 
                 // Alternador de modo
                 TextButton(

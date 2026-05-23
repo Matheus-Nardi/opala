@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../models/veiculo.dart';
 
@@ -25,5 +26,18 @@ class VeiculoService {
 
   Future<void> deletarVeiculo(int id) async {
     await _client.from('veiculos').delete().eq('id', id);
+  }
+
+  Future<String> uploadFotoVeiculo(String pathLocal, String nomeArquivo) async {
+    final file = File(pathLocal);
+    final storagePath = 'fotos/$nomeArquivo';
+    
+    await _client.storage.from('veiculos_fotos').upload(
+          storagePath,
+          file,
+          fileOptions: const FileOptions(upsert: true),
+        );
+
+    return _client.storage.from('veiculos_fotos').getPublicUrl(storagePath);
   }
 }

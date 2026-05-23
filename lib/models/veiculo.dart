@@ -7,6 +7,7 @@ class Veiculo {
   final int ano;
   final String placa;
   final String apelido;
+  final String? fotoUrl;
   List<Abastecimento> abastecimentos = [];
 
   Veiculo({
@@ -16,6 +17,7 @@ class Veiculo {
     required this.ano,
     required this.placa,
     required this.apelido,
+    this.fotoUrl,
   });
 
 
@@ -93,6 +95,7 @@ class Veiculo {
       'ano': ano,
       'placa': placa,
       'apelido': apelido,
+      'foto_url': fotoUrl,
     };
   }
 
@@ -104,6 +107,7 @@ class Veiculo {
       ano: map['ano'],
       placa: map['placa'],
       apelido: map['apelido'],
+      fotoUrl: map['foto_url'],
     );
   }
 }
