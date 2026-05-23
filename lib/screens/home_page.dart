@@ -5,6 +5,7 @@ import 'package:opala/screens/cadastro_veiculo_screen.dart';
 import 'package:opala/screens/lista_abastecimento_screen.dart';
 import 'package:opala/utils/snackbar_util.dart';
 import 'package:opala/widgets/card_veiculo_widget.dart';
+import 'package:opala/services/auth_service.dart';
 import '../widgets/texto_formatado_widget.dart';
 
 class HomePage extends StatefulWidget {
@@ -72,6 +73,35 @@ class _HomePageState extends State<HomePage> {
         title: const Text('Opala - Controle de Veículos'),
         backgroundColor: Colors.blueGrey,
         foregroundColor: Colors.white,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.logout),
+            tooltip: 'Sair',
+            onPressed: () async {
+              final confirmar = await showDialog<bool>(
+                context: context,
+                builder: (context) => AlertDialog(
+                  title: const Text('Sair do App'),
+                  content: const Text('Deseja realmente encerrar sua sessão?'),
+                  actions: [
+                    TextButton(
+                      onPressed: () => Navigator.pop(context, false),
+                      child: const Text('Cancelar', style: TextStyle(color: Colors.blueGrey)),
+                    ),
+                    TextButton(
+                      onPressed: () => Navigator.pop(context, true),
+                      child: const Text('Sair', style: TextStyle(color: Colors.red)),
+                    ),
+                  ],
+                ),
+              );
+
+              if (confirmar == true) {
+                await AuthService.sair();
+              }
+            },
+          ),
+        ],
       ),
       floatingActionButton: FloatingActionButton(
         backgroundColor: Colors.blueGrey,
