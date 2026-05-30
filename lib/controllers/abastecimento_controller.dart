@@ -3,7 +3,7 @@ import '../models/abastecimento.dart';
 import '../models/veiculo.dart';
 import '../services/abastecimento_service.dart';
 import '../services/pdf_export_service.dart';
-import 'package:printing/printing.dart';
+import '../services/pdf_delivery_service.dart';
 
 class AbastecimentoController extends ChangeNotifier {
   final AbastecimentoService _service = AbastecimentoService();
@@ -139,9 +139,8 @@ class AbastecimentoController extends ChangeNotifier {
       filtroDataFinal: _filtroDataFinal,
     );
 
-    await Printing.layoutPdf(
-      onLayout: (format) async => pdfBytes,
-      name: 'Relatorio_Abastecimentos_${veiculo.modelo.replaceAll(' ', '_')}_${DateTime.now().millisecondsSinceEpoch}',
-    );
+    final fileName = 'Relatorio_Abastecimentos_${veiculo.modelo.replaceAll(' ', '_')}_${DateTime.now().millisecondsSinceEpoch}';
+
+    await PdfDeliveryService.entregarPdf(pdfBytes, fileName);
   }
 }
