@@ -20,73 +20,6 @@ class Veiculo {
     this.fotoUrl,
   });
 
-
-  double get totalGasto {
-    double total = 0;
-    for (Abastecimento abastecimento in abastecimentos) {
-      total += abastecimento.valorTotal;
-    }
-    return total;
-  }
-
-  int get countAbastecimentos {
-    return abastecimentos.length;
-  }
-
-  double get mediaGlobal {
-    if (abastecimentos.isEmpty || abastecimentos.length < 2) return 0.0;
-    
-    final primeiro = abastecimentos.first;
-    final ultimo = abastecimentos.last;
-
-    double distanciaTotal = ultimo.odometro - primeiro.odometro;
-    
-    double quantidadeTotalGasta = 0.0;
-    // Começa do índice 1 pois o primeiro abastecimento é a referência inicial
-    for (int i = 1; i < abastecimentos.length; i++) {
-        quantidadeTotalGasta += abastecimentos[i].quantidade;
-    }
-
-    if(distanciaTotal <= 0 || quantidadeTotalGasta <= 0) return 0.0;
-
-    return distanciaTotal / quantidadeTotalGasta;
-  }
-
-  double get ultimoConsumoSeguro {
-    if (abastecimentos.isEmpty || abastecimentos.length < 2) return 0.0;
-
-    final ultimo = abastecimentos.last;
-    
-    if(!ultimo.tanqueCheio) {
-        return 0.0;
-    }
-
-    int indexAnterior = abastecimentos.length - 2;
-    double litrosGastosDesdeUltimoTanqueCheio = ultimo.quantidade;
-
-    while(indexAnterior >= 0) {
-      final anterior = abastecimentos[indexAnterior];
-      
-      if (anterior.tanqueCheio) {
-          double distanciaPeriodo = ultimo.odometro - anterior.odometro;
-          if (distanciaPeriodo <= 0) return 0.0;
-          return distanciaPeriodo / litrosGastosDesdeUltimoTanqueCheio;
-      } else {
-          litrosGastosDesdeUltimoTanqueCheio += anterior.quantidade;
-      }
-      indexAnterior--;
-    }
-    
-    return 0.0;
-  }
-
-  // Mantendo o getter mediaKmLitro para compatibilidade inicial ou padrão
-  double get mediaKmLitro {
-    double ultimo = ultimoConsumoSeguro;
-    if (ultimo > 0) return ultimo;
-    return mediaGlobal;
-  }
-
   Map<String, dynamic> toMap() {
     return {
       if (id != null) 'id': id,
@@ -100,7 +33,7 @@ class Veiculo {
   }
 
   factory Veiculo.fromMap(Map<String, dynamic> map) {
-    return Veiculo(
+    final veiculo = Veiculo(
       id: map['id'],
       marca: map['marca'],
       modelo: map['modelo'],
@@ -109,6 +42,13 @@ class Veiculo {
       apelido: map['apelido'],
       fotoUrl: map['foto_url'],
     );
+    
+    if (map['abastecimentos'] != null) {
+      veiculo.abastecimentos = (map['abastecimentos'] as List)
+          .map((e) => Abastecimento.fromMap(e))
+          .toList();
+    }
+    
+    return veiculo;
   }
 }
-

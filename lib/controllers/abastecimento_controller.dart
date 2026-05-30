@@ -32,6 +32,16 @@ class AbastecimentoController extends ChangeNotifier {
 
   AbastecimentoController(this.veiculo);
 
+  // --- Métodos de Formatação para a View ---
+
+  String obterDataFormatada(Abastecimento abastecimento) {
+    return '${abastecimento.data.day.toString().padLeft(2, '0')}/${abastecimento.data.month.toString().padLeft(2, '0')}/${abastecimento.data.year}';
+  }
+
+  String obterValorTotalFormatado(Abastecimento abastecimento) {
+    return 'R\$ ${abastecimento.valorTotal.toStringAsFixed(2)}';
+  }
+
   Future<void> carregarAbastecimentos() async {
     if (veiculo.id == null) return;
     _carregando = true;

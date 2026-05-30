@@ -22,16 +22,7 @@ class VeiculoController extends ChangeNotifier {
     notifyListeners();
 
     try {
-      final veiculosList = await _service.obterVeiculos(busca: _busca);
-      final todosAbastecimentos = await _abastecimentoService.obterTodosAbastecimentos();
-
-      for (var veiculo in veiculosList) {
-        veiculo.abastecimentos = todosAbastecimentos
-            .where((a) => a.veiculoId == veiculo.id)
-            .toList();
-      }
-
-      _veiculos = veiculosList;
+      _veiculos = await _service.obterVeiculos(busca: _busca);
     } catch (e) {
       debugPrint('Erro ao carregar veículos: $e');
     } finally {
@@ -44,6 +35,36 @@ class VeiculoController extends ChangeNotifier {
     _busca = valor;
     carregarVeiculos();
   }
+
+  // --- Métodos de Formatação para a View ---
+
+  String obterTotalGastoFormatado(Veiculo veiculo) {
+    final total = _service.calcularTotalGasto(veiculo);
+    return 'R\$ ${total.toStringAsFixed(2)}';
+  }
+
+  String obterMediaFormatada(Veiculo veiculo) {
+    final ultimoConsumo = _service.calcularUltimoConsumoSeguro(veiculo);
+    if (ultimoConsumo > 0) {
+      return ultimoConsumo.toStringAsFixed(1);
+    }
+    
+    final mediaGlobal = _service.calcularMediaGlobal(veiculo);
+    if (mediaGlobal > 0) {
+      return '${mediaGlobal.toStringAsFixed(1)} (Global)';
+    }
+    
+    return '--';
+  }
+
+  int obterCountAbastecimentos(Veiculo veiculo) {
+    return veiculo.abastecimentos.length;
+  }
+  
+  bool usarCorDestaqueNaMedia(Veiculo veiculo) {
+    return _service.calcularUltimoConsumoSeguro(veiculo) > 0;
+  }
+
 
 
   Future<void> adicionarVeiculo(Veiculo veiculo) async {

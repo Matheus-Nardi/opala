@@ -4,6 +4,7 @@ import 'package:pdf/widgets.dart' as pw;
 import 'package:printing/printing.dart';
 import 'package:opala/models/abastecimento.dart';
 import 'package:opala/models/veiculo.dart';
+import 'package:opala/services/veiculo_service.dart';
 
 class PdfExportService {
   static Future<Uint8List> gerarRelatorioAbastecimentos({
@@ -252,11 +253,12 @@ class PdfExportService {
     }
 
     // Calcular totais
+    final veiculoService = VeiculoService();
     double totalGastoGeral = 0.0;
     int totalAbastecimentosGeral = 0;
     for (var v in veiculos) {
-      totalGastoGeral += v.totalGasto;
-      totalAbastecimentosGeral += v.countAbastecimentos;
+      totalGastoGeral += veiculoService.calcularTotalGasto(v);
+      totalAbastecimentosGeral += v.abastecimentos.length;
     }
 
     pdf.addPage(
@@ -334,13 +336,16 @@ class PdfExportService {
               'Gasto Total'
             ],
             data: veiculos.map((v) {
+              double mediaKmLitro = veiculoService.calcularUltimoConsumoSeguro(v);
+              if (mediaKmLitro == 0) mediaKmLitro = veiculoService.calcularMediaGlobal(v);
+
               return [
                 v.apelido,
                 '${v.marca} ${v.modelo} (${v.ano})',
                 v.placa,
-                '${v.countAbastecimentos}',
-                v.mediaKmLitro > 0 ? '${formatarDecimal(v.mediaKmLitro)} km/L' : 'N/A',
-                formatarMoeda(v.totalGasto),
+                '${v.abastecimentos.length}',
+                mediaKmLitro > 0 ? '${formatarDecimal(mediaKmLitro)} km/L' : 'N/A',
+                formatarMoeda(veiculoService.calcularTotalGasto(v)),
               ];
             }).toList(),
             headerStyle: pw.TextStyle(

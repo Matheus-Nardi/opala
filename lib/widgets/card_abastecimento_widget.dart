@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:opala/models/abastecimento.dart';
+import 'package:opala/controllers/abastecimento_controller.dart';
 import 'package:opala/widgets/texto_formatado_widget.dart';
 
 class CardAbastecimentoWidget extends StatelessWidget {
   final Abastecimento abastecimento;
-  const CardAbastecimentoWidget({super.key, required this.abastecimento});
+  final AbastecimentoController controller;
+  
+  const CardAbastecimentoWidget({super.key, required this.abastecimento, required this.controller});
 
   @override
   Widget build(BuildContext context) {
@@ -59,7 +62,7 @@ class CardAbastecimentoWidget extends StatelessWidget {
                 ),
                 const SizedBox(width: 8),
                 TextoFormatado(
-                  '${abastecimento.data.day.toString().padLeft(2, '0')}/${abastecimento.data.month.toString().padLeft(2, '0')}/${abastecimento.data.year}',
+                  controller.obterDataFormatada(abastecimento),
                   tamanho: 14,
                   cor: Colors.blueGrey.shade600,
                 ),
@@ -113,7 +116,7 @@ class CardAbastecimentoWidget extends StatelessWidget {
                       cor: Colors.grey.shade600,
                     ),
                     TextoFormatado(
-                      'R\$ ${abastecimento.valorTotal.toStringAsFixed(2)}',
+                      controller.obterValorTotalFormatado(abastecimento),
                       tamanho: 14,
                       peso: FontWeight.bold,
                       cor: Colors.blueGrey.shade800,

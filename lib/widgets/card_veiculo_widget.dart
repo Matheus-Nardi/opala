@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:opala/models/veiculo.dart';
+import 'package:opala/controllers/veiculo_controller.dart';
 import 'package:opala/widgets/texto_formatado_widget.dart';
 
 class CardVeiculoWidget extends StatelessWidget {
   final Veiculo veiculo;
-  const CardVeiculoWidget({super.key, required this.veiculo});
+  final VeiculoController controller;
+  
+  const CardVeiculoWidget({super.key, required this.veiculo, required this.controller});
 
   @override
   Widget build(BuildContext context) {
@@ -120,7 +123,7 @@ class CardVeiculoWidget extends StatelessWidget {
                           cor: Colors.grey.shade600,
                         ),
                         TextoFormatado(
-                          'R\$ ${veiculo.totalGasto.toStringAsFixed(2)}',
+                          controller.obterTotalGastoFormatado(veiculo),
                           tamanho: 16,
                           peso: FontWeight.bold,
                           cor: Colors.blueGrey.shade800,
@@ -136,12 +139,10 @@ class CardVeiculoWidget extends StatelessWidget {
                           cor: Colors.grey.shade600,
                         ),
                         TextoFormatado(
-                          veiculo.ultimoConsumoSeguro > 0 
-                            ? veiculo.ultimoConsumoSeguro.toStringAsFixed(1) 
-                            : (veiculo.mediaGlobal > 0 ? '${veiculo.mediaGlobal.toStringAsFixed(1)} (Global)' : '--'),
+                          controller.obterMediaFormatada(veiculo),
                           tamanho: 16,
                           peso: FontWeight.bold,
-                          cor: veiculo.ultimoConsumoSeguro > 0 ? Colors.blueGrey.shade800 : Colors.blueGrey.shade400,
+                          cor: controller.usarCorDestaqueNaMedia(veiculo) ? Colors.blueGrey.shade800 : Colors.blueGrey.shade400,
                         ),
                       ],
                     ),
@@ -154,7 +155,7 @@ class CardVeiculoWidget extends StatelessWidget {
                           cor: Colors.grey.shade600,
                         ),
                         TextoFormatado(
-                          '${veiculo.countAbastecimentos}',
+                          '${controller.obterCountAbastecimentos(veiculo)}',
                           tamanho: 16,
                           peso: FontWeight.bold,
                           cor: Colors.blueGrey.shade800,

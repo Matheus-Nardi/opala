@@ -293,7 +293,7 @@ class _HomePageState extends State<HomePage> {
                                     _controller.carregarVeiculos();
                                   },
                                   onLongPress: () => _confirmarExclusao(veiculoAtual),
-                                  child: CardVeiculoWidget(veiculo: veiculoAtual),
+                                  child: CardVeiculoWidget(veiculo: veiculoAtual, controller: _controller),
                                 ),
                               );
                             },

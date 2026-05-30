@@ -220,6 +220,7 @@ class _ListaAbastecimentoScreenState extends State<ListaAbastecimentoScreen> {
                               onLongPress: () => _confirmarExclusao(abastecimentoAtual),
                               child: CardAbastecimentoWidget(
                                 abastecimento: abastecimentoAtual,
+                                controller: _controller,
                               ),
                             ),
                           );

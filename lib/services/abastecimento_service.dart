@@ -28,15 +28,6 @@ class AbastecimentoService {
     return (response as List).map((item) => Abastecimento.fromMap(item)).toList();
   }
 
-  Future<List<Abastecimento>> obterTodosAbastecimentos() async {
-    final response = await _client
-        .from('abastecimentos')
-        .select()
-        .order('odometro', ascending: true);
-    
-    return (response as List).map((item) => Abastecimento.fromMap(item)).toList();
-  }
-
 
   Future<Abastecimento> adicionarAbastecimento(Abastecimento abastecimento) async {
     final response = await _client
